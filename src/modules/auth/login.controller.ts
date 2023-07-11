@@ -347,29 +347,12 @@ export class LoginController {
       } else if (payload.userId) {
         user = await this.userRepo.findById(payload.userId);
       }
-      console.warn('user', user);
 
       if (!user) {
         throw new HttpErrors.Unauthorized(
           AuthenticateErrorKeys.UserDoesNotExist,
         );
       }
-      console.warn('user.getId()', user.getId());
-      console.warn('defaultTenant', user.defaultTenant);
-
-      const test = await this.userTenantRepo.count();
-      console.warn('test1', test);
-
-      const test2 = await this.userTenantRepo.findById(1);
-      console.warn('test2', test2);
-
-      const test3 = await this.userTenantRepo.find({
-        where: {
-          userId: user.getId(),
-          tenantId: user.defaultTenant,
-        },
-      });
-      console.warn('userTenant', test3);
 
       const userTenant = await this.userTenantRepo.findOne({
         where: {
@@ -377,7 +360,6 @@ export class LoginController {
           tenantId: user.defaultTenant,
         },
       });
-      console.warn('userTenant', userTenant);
 
       if (!userTenant) {
         throw new HttpErrors.Unauthorized(
@@ -402,7 +384,6 @@ export class LoginController {
       authUser.permissions = this.getUserPermissions(utPerms, role.permissions);
       authUser.role = role.roleKey.toString();
       if (userTenant.id) authUser.userTenantId = userTenant.id;
-      console.warn('authUser', authUser);
 
       const accessToken = jwt.sign(
         authUser.toJSON(),
@@ -412,7 +393,6 @@ export class LoginController {
           issuer: process.env.JWT_ISSUER,
         },
       );
-      console.warn('accessToken', accessToken);
 
       const size = 32,
         ms = 1000;
