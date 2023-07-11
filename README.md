@@ -64,7 +64,7 @@ git clone https://github.com/sourcefuse/loopback4-phs.git
 #### Install dependencies
 
 ```sh
-npm i
+npm i --force //TODO: update npm dependencies.
 ```
 
 #### Update app name
