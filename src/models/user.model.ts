@@ -10,8 +10,7 @@ import {UserModifiableEntity} from './user-modifiable-entity.model';
 @model({
   name: 'users',
   strict: 'filter',
-  settings:{
-  }
+  settings: {},
 })
 export class User extends UserModifiableEntity implements IAuthUser {
   @property({

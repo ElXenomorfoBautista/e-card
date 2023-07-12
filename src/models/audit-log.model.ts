@@ -2,9 +2,7 @@ import {Entity, model, property} from '@loopback/repository';
 
 @model({
   name: 'audit_logs',
-   settings:{
-  }
-
+  settings: {},
 })
 export class AuditLog extends Entity {
   @property({
