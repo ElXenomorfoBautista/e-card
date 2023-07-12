@@ -1,3 +1,9 @@
+## PHS Backend Guide
+
+https://phspro.atlassian.net/wiki/spaces/PHS/pages/48857089/Backend+-+LoopBack4+-+Node+Express+Typescript
+
+---
+
 # loopback4-phs
 
 [![LoopBack](<https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png>)](http://loopback.io/)
@@ -64,7 +70,7 @@ git clone https://github.com/sourcefuse/loopback4-phs.git
 #### Install dependencies
 
 ```sh
-npm i
+npm i --force //TODO: update npm dependencies.
 ```
 
 #### Update app name
