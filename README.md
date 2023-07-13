@@ -1,3 +1,9 @@
+## PHS Backend Guide
+
+https://phspro.atlassian.net/wiki/spaces/PHS/pages/48857089/Backend+-+LoopBack4+-+Node+Express+Typescript
+
+---
+
 # loopback4-phs
 
 [![LoopBack](<https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png>)](http://loopback.io/)
@@ -25,29 +31,29 @@ In addition to that, it also provides you with some of the good to have items
 
 ## Table of Contents
 
-- [How to use](#How-to-use)
-  - [Clone the repository](#Clone-the-repository)
-  - [Install dependencies](#Install-dependencies)
-  - [Update app name](#Update-app-name)
-  - [Update git origin](#Update-git-origin)
-  - [Setup database](#Setup-database)
-  - [Setup redis](#Setup-redis)
-  - [Configure environment](#Configure-environment)
-  - [Run DB migrations](#Run-DB-migrations)
-  - [Start server](#Start-server)
-  - [API Explorer](#API-Explorer)
-- [Architecture overview](#Architecture-overview)
-  - [Database Model](#Database-Model)
-    - [Key Notes](#Key-Notes)
-    - [Multi-tenant system](#Multi-tenant-system)
-  - [Authentication](#Authentication)
-  - [Authorization](#Authorization)
-  - [Soft Delete](#Soft-Delete)
-  - [Audit Logs](#Audit-Logs)
-- [Feedback](#Feedback)
-- [Contributing](#Contributing)
-- [Code of conduct](#Code-of-conduct)
-- [License](#License)
+-   [How to use](#How-to-use)
+    -   [Clone the repository](#Clone-the-repository)
+    -   [Install dependencies](#Install-dependencies)
+    -   [Update app name](#Update-app-name)
+    -   [Update git origin](#Update-git-origin)
+    -   [Setup database](#Setup-database)
+    -   [Setup redis](#Setup-redis)
+    -   [Configure environment](#Configure-environment)
+    -   [Run DB migrations](#Run-DB-migrations)
+    -   [Start server](#Start-server)
+    -   [API Explorer](#API-Explorer)
+-   [Architecture overview](#Architecture-overview)
+    -   [Database Model](#Database-Model)
+        -   [Key Notes](#Key-Notes)
+        -   [Multi-tenant system](#Multi-tenant-system)
+    -   [Authentication](#Authentication)
+    -   [Authorization](#Authorization)
+    -   [Soft Delete](#Soft-Delete)
+    -   [Audit Logs](#Audit-Logs)
+-   [Feedback](#Feedback)
+-   [Contributing](#Contributing)
+-   [Code of conduct](#Code-of-conduct)
+-   [License](#License)
 
 ### How to use
 
@@ -64,21 +70,21 @@ git clone https://github.com/sourcefuse/loopback4-phs.git
 #### Install dependencies
 
 ```sh
-npm i --force (tmp) //TODO: update npm dependencies.
+npm i --force //TODO: update npm dependencies.
 ```
 
 #### Update app name
 
 Say the application you are developing is named 'To Do List'. Change as below.
 
-- Rename the directory to to-do-list.
-- package.json and package-lock.json - Replace loopback4-phs with to-do-list in entire file. Update description.
-- public/index.html - Update title tag and h1 tag inside body as per your app name.
-- src/application.ts - Rename class to ToDoListApplication and all its references. If you are using VSCode, select the class name, press F2 and then rename it. This will update all its references as well.
-- src/index.ts - Replace all refences of Loopback4Application with ToDoListApplication.
-- src/\_\_tests\_\_/\*\* - Replace all refences of Loopback4Application with ToDoListApplication.
-- Update README.md with details of your application
-- Update CONTRIBUTING.md with details as per your application.
+-   Rename the directory to to-do-list.
+-   package.json and package-lock.json - Replace loopback4-phs with to-do-list in entire file. Update description.
+-   public/index.html - Update title tag and h1 tag inside body as per your app name.
+-   src/application.ts - Rename class to ToDoListApplication and all its references. If you are using VSCode, select the class name, press F2 and then rename it. This will update all its references as well.
+-   src/index.ts - Replace all refences of Loopback4Application with ToDoListApplication.
+-   src/\_\_tests\_\_/\*\* - Replace all refences of Loopback4Application with ToDoListApplication.
+-   Update README.md with details of your application
+-   Update CONTRIBUTING.md with details as per your application.
 
 #### Update git origin
 
@@ -161,19 +167,19 @@ You can try out only the unsecured APIs here, like auth/login. The secure endpoi
 
 ##### Key Notes
 
-- Database used is Postgresql version 10 and above.
-- Database schema is based on multi-tenant architecture overall.
-- Each table have default columns - id (Primary Key), created_by, modified_by, created_on, modified_on, deleted.
+-   Database used is Postgresql version 10 and above.
+-   Database schema is based on multi-tenant architecture overall.
+-   Each table have default columns - id (Primary Key), created_by, modified_by, created_on, modified_on, deleted.
 
 ##### Multi-tenant system
 
-- Tenants are the organisational entities using the application.
-- Tenant types - Customer, Application (Umbrella Tenant for super admin work).
-- Every user will need be associated to a tenant in order to access the application.
-- User tenant has a m:n relationship, user_tenants table is the link table for the same.
-- Every user will have a role associated for every tenant it belongs to, role_id in user_tenants table.
-- Every role has associated permissions.
-- Each user may have some extra permissions (allowed or denied) per tenant over and above its role, user_tenant_permissions table takes care of it.
+-   Tenants are the organisational entities using the application.
+-   Tenant types - Customer, Application (Umbrella Tenant for super admin work).
+-   Every user will need be associated to a tenant in order to access the application.
+-   User tenant has a m:n relationship, user_tenants table is the link table for the same.
+-   Every user will have a role associated for every tenant it belongs to, role_id in user_tenants table.
+-   Every role has associated permissions.
+-   Each user may have some extra permissions (allowed or denied) per tenant over and above its role, user_tenant_permissions table takes care of it.
 
 For detailed description of database tables and columns, please open lbstarter.dbs in [DbSchema](https://www.dbschema.com/) tool.
 
@@ -185,16 +191,16 @@ _If you only want to use authentication, not the whole starter codebase, you can
 
 There are two different strategies of authentication used here.
 
-- **Oauth2 client password + Passport local** - This is a 2-step auth process
+-   **Oauth2 client password + Passport local** - This is a 2-step auth process
 
-  1. Client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login' API. After successful verification, it will return a jwt code containing client details, signed using client's private key (secret) stored in DB. Expiration time of code will be based on value in DB against that auth client.
-  2. Next, client will need to send this code along with client id and username to '/auth/token' API. After successful verification, it will return access token (jwt containing user details) and refresh token. Expiration time of token will be based on value in DB against that auth client.
+    1. Client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login' API. After successful verification, it will return a jwt code containing client details, signed using client's private key (secret) stored in DB. Expiration time of code will be based on value in DB against that auth client.
+    2. Next, client will need to send this code along with client id and username to '/auth/token' API. After successful verification, it will return access token (jwt containing user details) and refresh token. Expiration time of token will be based on value in DB against that auth client.
 
-  _The front end application will be mostly using this strategy._
+    _The front end application will be mostly using this strategy._
 
-- **Oauth2 resource owner password** - This is a single step process where in client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login-token' API. In this case, in addition to verifying client credentials and user password, system will also check if the user has permission to access APIs via this auth client. Only those auth clients which have associated userids can use this API for authentication.
+-   **Oauth2 resource owner password** - This is a single step process where in client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login-token' API. In this case, in addition to verifying client credentials and user password, system will also check if the user has permission to access APIs via this auth client. Only those auth clients which have associated userids can use this API for authentication.
 
-  _Any 3rd party application accessing your APIs will be using this strategy, like from AWS Lambda function._
+    _Any 3rd party application accessing your APIs will be using this strategy, like from AWS Lambda function._
 
 Once access token is obtained, it is needed to be passed into every API as Authorization bearer token header, which will be validated for access to API.
 
