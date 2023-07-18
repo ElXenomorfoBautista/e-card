@@ -12,19 +12,19 @@ import {
 } from '@loopback/rest';
 import { AuthenticateFn, AuthenticationBindings } from 'loopback4-authentication';
 import { AuthorizationBindings, AuthorizeErrorKeys, AuthorizeFn } from 'loopback4-authorization';
-
-import { AuthClient } from './models';
-import { AuthUser } from './modules/auth';
+import { AuthClient } from '.././models';
+import { AuthUser } from '.././modules/auth';
 
 const SequenceActions = RestBindings.SequenceActions;
 
-export class MySequence implements SequenceHandler {
+export class MyAuthenticatingSequence implements SequenceHandler {
     constructor(
         @inject(SequenceActions.FIND_ROUTE) protected findRoute: FindRoute,
         @inject(SequenceActions.PARSE_PARAMS) protected parseParams: ParseParams,
         @inject(SequenceActions.INVOKE_METHOD) protected invoke: InvokeMethod,
         @inject(SequenceActions.SEND) public send: Send,
         @inject(SequenceActions.REJECT) public reject: Reject,
+
         @inject(AuthenticationBindings.USER_AUTH_ACTION)
         protected authenticateRequest: AuthenticateFn<AuthUser>,
         @inject(AuthenticationBindings.CLIENT_AUTH_ACTION)
