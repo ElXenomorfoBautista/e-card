@@ -1,8 +1,8 @@
-import { SECURITY_SCHEME_SPEC } from '@loopback/authentication-jwt';
 import { Loopback4Application } from './application';
 import { ApplicationConfig } from '@loopback/core';
 
 export { Loopback4Application };
+export * from './multi-tenancy';
 
 export async function main(options: ApplicationConfig = {}) {
     const app = new Loopback4Application(options);
