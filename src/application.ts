@@ -1,5 +1,5 @@
 import { BootMixin } from '@loopback/boot';
-import { ApplicationConfig } from '@loopback/core';
+import { ApplicationConfig, createBindingFromClass } from '@loopback/core';
 import { RepositoryMixin } from '@loopback/repository';
 import { RestApplication } from '@loopback/rest';
 import { RestExplorerBindings, RestExplorerComponent } from '@loopback/rest-explorer';
@@ -17,8 +17,11 @@ import {
     LocalPasswordVerifyProvider,
     ResourceOwnerVerifyProvider,
 } from './modules/auth';
-import { MySequence } from './sequence';
+import { MySequence } from './sequences/sequence';
 import { JWTAuthenticationComponent } from '@loopback/authentication-jwt';
+import { ErrorHandlerMiddlewareProvider } from './middlewares/error-handler.middleware';
+import { MultiTenancyComponent } from './multi-tenancy/component';
+import { AuthHandlerMiddlewareProvider } from './middlewares/auth-handler.middleware';
 
 export class Loopback4Application extends BootMixin(ServiceMixin(RepositoryMixin(RestApplication))) {
     constructor(options: ApplicationConfig = {}) {
@@ -57,6 +60,12 @@ export class Loopback4Application extends BootMixin(ServiceMixin(RepositoryMixin
         this.component(AuthorizationComponent);
 
         this.component(JWTAuthenticationComponent);
+
+        this.component(MultiTenancyComponent);
+
+        //custom middlewares
+        this.add(createBindingFromClass(ErrorHandlerMiddlewareProvider));
+        this.add(createBindingFromClass(AuthHandlerMiddlewareProvider));
 
         this.projectRoot = __dirname;
         // Customize @loopback/boot Booter Conventions here
