@@ -4,14 +4,14 @@ https://phspro.atlassian.net/wiki/spaces/PHS/pages/48857089/Backend+-+LoopBack4+
 
 ---
 
-# loopback4-phs
+# HIT-API
 
 [![LoopBack](<https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png>)](http://loopback.io/)
 
-[![Dependencies Status](https://img.shields.io/david/sourcefuse/loopback4-phs.svg?style=flat-square&label=Dependencies)](https://github.com/sourcefuse/loopback4-phs)
-[![Loopback Core Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/loopback4-phs/@loopback/core.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next)
-[![Loopback Build Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/loopback4-phs/dev/@loopback/build.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next/tree/master/packages/build)
-[![License](https://img.shields.io/github/license/sourcefuse/loopback4-phs.svg?color=blue&label=License&style=flat-square)](https://github.com/sourcefuse/loopback4-phs/blob/master/LICENSE)
+[![Dependencies Status](https://img.shields.io/david/sourcefuse/HIT-API.svg?style=flat-square&label=Dependencies)](https://github.com/sourcefuse/HIT-API)
+[![Loopback Core Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/HIT-API/@loopback/core.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next)
+[![Loopback Build Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/HIT-API/dev/@loopback/build.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next/tree/master/packages/build)
+[![License](https://img.shields.io/github/license/sourcefuse/HIT-API.svg?color=blue&label=License&style=flat-square)](https://github.com/sourcefuse/HIT-API/blob/master/LICENSE)
 
 This is a LoopBack 4 starter application to get you upto speed with initial setup of a very standard REST API application with LoopBack 4 as framework. It provides you with all the core requisite features for most of the applications over and above framework features, viz.,
 
@@ -27,7 +27,7 @@ In addition to that, it also provides you with some of the good to have items
 1. Multi-tenant architecture system
 2. Soft deletes
 
-**NOTE: For a non multi-tenant starter, please refer to the branch [single_tenant](https://github.com/sourcefuse/loopback4-phs/tree/single_tenant).**
+**NOTE: For a non multi-tenant starter, please refer to the branch [single_tenant](https://github.com/sourcefuse/HIT-API/tree/single_tenant).**
 
 ## Table of Contents
 
@@ -64,7 +64,7 @@ _Do remember that this is just one of the way to use it. You can always build yo
 #### Clone the repository
 
 ```sh
-git clone https://github.com/sourcefuse/loopback4-phs.git
+git clone https://github.com/sourcefuse/HIT-API.git
 ```
 
 #### Install dependencies
@@ -78,7 +78,7 @@ npm i --force //TODO: update npm dependencies.
 Say the application you are developing is named 'To Do List'. Change as below.
 
 -   Rename the directory to to-do-list.
--   package.json and package-lock.json - Replace loopback4-phs with to-do-list in entire file. Update description.
+-   package.json and package-lock.json - Replace HIT-API with to-do-list in entire file. Update description.
 -   public/index.html - Update title tag and h1 tag inside body as per your app name.
 -   src/application.ts - Rename class to ToDoListApplication and all its references. If you are using VSCode, select the class name, press F2 and then rename it. This will update all its references as well.
 -   src/index.ts - Replace all refences of Loopback4Application with ToDoListApplication.
@@ -107,7 +107,7 @@ Setup a redis instance. Follow the quick start guide [here](https://redis.io/top
 
 #### Configure environment
 
-You need to configure your environment variables now. Copy [.env.example](https://github.com/sourcefuse/loopback4-phs/blob/master/.env.example) and rename as .env. Now provide values for the keys mentioned there. These are going to be database credentials ([created here](#setup-database)) and redis credentials ([created here](#setup-redis)). You don't need to provide all the keys though. For some of these (not needed to be secure keys), we have already specified default values in [.env.defaults](https://github.com/sourcefuse/loopback4-phs/blob/master/.env.defaults). You can remove them. You will require to fill at least these ones.
+You need to configure your environment variables now. Copy [.env.example](https://github.com/sourcefuse/HIT-API/blob/master/.env.example) and rename as .env. Now provide values for the keys mentioned there. These are going to be database credentials ([created here](#setup-database)) and redis credentials ([created here](#setup-redis)). You don't need to provide all the keys though. For some of these (not needed to be secure keys), we have already specified default values in [.env.defaults](https://github.com/sourcefuse/HIT-API/blob/master/.env.defaults). You can remove them. You will require to fill at least these ones.
 
 ```json
 DB_HOST=localhost
@@ -163,7 +163,7 @@ You can try out only the unsecured APIs here, like auth/login. The secure endpoi
 
 #### Database Model
 
-![db-schema](https://github.com/sourcefuse/loopback4-phs/blob/master/db-schema.png)
+![db-schema](https://github.com/sourcefuse/HIT-API/blob/master/db-schema.png)
 
 ##### Key Notes
 
@@ -222,19 +222,19 @@ Audit logs are updated using DB triggers in this project. Refer to the lbstarter
 
 ### Feedback
 
-If you've noticed a bug or have a question or have a feature request, [search the issue tracker](https://github.com/sourcefuse/loopback4-phs/issues) to see if someone else in the community has already created a ticket.
-If not, go ahead and [make one](https://github.com/sourcefuse/loopback4-phs/issues/new/choose)!
+If you've noticed a bug or have a question or have a feature request, [search the issue tracker](https://github.com/sourcefuse/HIT-API/issues) to see if someone else in the community has already created a ticket.
+If not, go ahead and [make one](https://github.com/sourcefuse/HIT-API/issues/new/choose)!
 All feature requests are welcome. Implementation time may vary. Feel free to contribute the same, if you can.
 If you think this extension is useful, please [star](https://help.github.com/en/articles/about-stars) it. Appreciation really helps in keeping this project alive.
 
 ### Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/sourcefuse/loopback4-phs/blob/master/.github/CONTRIBUTING.md) for details on the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/sourcefuse/HIT-API/blob/master/.github/CONTRIBUTING.md) for details on the process for submitting pull requests to us.
 
 ### Code of conduct
 
-Code of conduct guidelines [here](https://github.com/sourcefuse/loopback4-phs/blob/master/.github/CODE_OF_CONDUCT.md).
+Code of conduct guidelines [here](https://github.com/sourcefuse/HIT-API/blob/master/.github/CODE_OF_CONDUCT.md).
 
 ### License
 
-[MIT](https://github.com/sourcefuse/loopback4-phs/blob/master/LICENSE)
+[MIT](https://github.com/sourcefuse/HIT-API/blob/master/LICENSE)

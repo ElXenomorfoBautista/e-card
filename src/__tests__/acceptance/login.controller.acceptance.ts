@@ -216,9 +216,9 @@ describe('Login Controller', () => {
             clientId: 'web',
             clientSecret: 'test',
             redirectUrl: 'http://localhost:4200/login/success',
-            accessTokenExpiration: 900,
-            refreshTokenExpiration: 86400,
-            authCodeExpiration: 180,
+            accessTokenExpiration: 9000,
+            refreshTokenExpiration: 864000,
+            authCodeExpiration: 1800,
             secret: 'poiuytrewq',
         });
 

@@ -1,4 +1,4 @@
-# loopback4-phs
+# HIT-API
 
 ## Contributing
 
@@ -6,13 +6,13 @@ First off, thank you for considering contributing to the project. It's people li
 
 ### Where do I go from here ?
 
-If you've noticed a bug or have a question, [search the issue tracker](https://github.com/sourcefuse/loopback4-phs/issues) to see if
+If you've noticed a bug or have a question, [search the issue tracker](https://github.com/sourcefuse/HIT-API/issues) to see if
 someone else in the community has already created a ticket. If not, go ahead and
-[make one](https://github.com/sourcefuse/loopback4-phs/issues/new/choose)!
+[make one](https://github.com/sourcefuse/HIT-API/issues/new/choose)!
 
 ### Fork & create a branch
 
-If this is something you think you can fix, then [fork loopback4-phs](https://help.github.com/articles/fork-a-repo) and
+If this is something you think you can fix, then [fork HIT-API](https://help.github.com/articles/fork-a-repo) and
 create a branch with a descriptive name.
 
 A good branch name would be (where issue #325 is the ticket you're working on):
@@ -24,10 +24,10 @@ git checkout -b 325-add-new-feature
 ### Make a Pull Request
 
 At this point, you should switch back to your master branch and make sure it's
-up to date with loopback4-phs's master branch:
+up to date with HIT-API's master branch:
 
 ```sh
-git remote add upstream git@github.com:sourcefuse/loopback4-phs.git
+git remote add upstream git@github.com:sourcefuse/HIT-API.git
 git checkout master
 git pull upstream master
 ```
