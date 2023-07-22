@@ -45,14 +45,14 @@ export class UserController {
     })
     async create(@requestBody() user: User): Promise<User> {
         debug('tenant %s', this.tenant);
-        if (!user.id || !user.defaultTenant) {
+        debug('user %s', user);
+        if (!user.defaultTenant) {
             throw new HttpErrors.UnprocessableEntity(
                 'User Id or Default Tenant Id is missing in the request parameters'
             );
         }
         const response = await this.userRepository.create(user);
-        await this.userTenantRepo.create(user);
-
+        await this.userTenantRepo.create(response);
         return response;
     }
 
