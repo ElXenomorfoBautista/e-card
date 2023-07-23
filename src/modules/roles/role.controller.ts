@@ -24,6 +24,7 @@ export class RoleController {
         },
     })
     async create(@requestBody() role: Role): Promise<Role> {
+        console.info(role);
         return this.roleRepository.create(role);
     }
 
