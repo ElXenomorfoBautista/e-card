@@ -169,6 +169,23 @@ export class LoginController {
         }
     }
 
+    @authenticate(STRATEGY.BEARER)
+    @authorize({ permissions: ['*'] })
+    @get('/auth/auth-user')
+    async authUser(@param.header.string('Authorization') auth: string) {
+        try {
+            const token = auth?.replace(/bearer /i, '');
+            if (!token) {
+                throw new HttpErrors.Unauthorized(AuthErrorKeys.TokenInvalid);
+            }
+            const decoded = jwt.decode(token);
+            return decoded;
+        } catch (err) {
+            throw new HttpErrors.InternalServerError(AuthErrorKeys.UnknownError);
+        }
+        return true;
+    }
+
     @authorize({ permissions: ['*'] })
     @post('/auth/token-refresh', {
         responses: {
@@ -352,6 +369,8 @@ export class LoginController {
                 expiresIn: authClient.accessTokenExpiration,
                 issuer: process.env.JWT_ISSUER,
             });
+            console.log('authUser', authUser);
+            console.log('userTenant', userTenant);
 
             const size = 32,
                 ms = 1000;

@@ -15,7 +15,6 @@ export class UserTenantRepository extends DefaultSoftCrudRepository<
     UserTenantRelations
 > {
     public readonly tenant: BelongsToAccessor<Tenant, typeof UserTenant.prototype.id>;
-
     public readonly user: BelongsToAccessor<User, typeof UserTenant.prototype.id>;
     public readonly role: BelongsToAccessor<Role, typeof UserTenant.prototype.id>;
 

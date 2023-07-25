@@ -23,7 +23,9 @@ export class Role extends BaseEntity {
     @property({
         type: 'array',
         itemType: 'string',
-        postgresql: { dataType: 'string ARRAY' },
+        postgresql: {
+            dataType: 'varchar[]',
+        },
     })
     permissions: string[];
 

@@ -104,6 +104,8 @@ export class RoleController {
         },
     })
     async updateById(@param.path.number('id') id: number, @requestBody() role: Role): Promise<void> {
+        console.info('id', id);
+        console.info('role', role);
         await this.roleRepository.updateById(id, role);
     }
 
