@@ -1,7 +1,8 @@
-import { model, property } from '@loopback/repository';
+import { model, property, belongsTo } from '@loopback/repository';
 
 import { UserModifiableEntity } from './user-modifiable-entity.model';
 import { TenantType } from '../modules/user-tenants/tenant-type.enum';
+import { TenantsType } from './tenants-type.model';
 
 @model({
     name: 'tenants',
@@ -71,6 +72,18 @@ export class Tenant extends UserModifiableEntity {
         default: 'active',
     })
     status: string;
+
+    @belongsTo(
+        () => TenantsType,
+        {
+            name: 'tenantsType',
+        },
+        {
+            name: 'tenants_type_id',
+            required: true,
+        }
+    )
+    tenantsTypeId: number;
 
     constructor(data?: Partial<Tenant>) {
         super(data);

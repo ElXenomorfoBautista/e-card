@@ -369,9 +369,6 @@ export class LoginController {
                 expiresIn: authClient.accessTokenExpiration,
                 issuer: process.env.JWT_ISSUER,
             });
-            console.log('authUser', authUser);
-            console.log('userTenant', userTenant);
-
             const size = 32,
                 ms = 1000;
             const refreshToken: string = crypto.randomBytes(size).toString('hex');
