@@ -19,6 +19,7 @@ import { PermissionKey } from '../auth/permission-key.enum';
 import { inject } from '@loopback/context';
 import { MultiTenancyBindings, Tenant } from '../../multi-tenancy';
 import debugFactory from 'debug';
+import { RoleService } from '../../services';
 const debug = debugFactory('loopback:controller:user');
 
 export class UserController {
@@ -28,7 +29,9 @@ export class UserController {
         @repository(UserTenantRepository)
         public userTenantRepo: UserTenantRepository,
         @inject(MultiTenancyBindings.CURRENT_TENANT, { optional: true })
-        private tenant?: Tenant
+        private tenant?: Tenant,
+        @inject('services.RoleService')
+        public roleService?: RoleService
     ) {}
 
     @authenticate(STRATEGY.BEARER)
@@ -52,7 +55,7 @@ export class UserController {
             );
         }
         const response = await this.userRepository.create(user);
-        await this.userTenantRepo.create(response);
+        await this.userTenantRepo.createFromUser(response);
         return response;
     }
 

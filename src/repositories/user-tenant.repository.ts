@@ -33,12 +33,14 @@ export class UserTenantRepository extends DefaultSoftCrudRepository<
 
         this.tenant = this.createBelongsToAccessorFor('tenant_id', tenantRepositoryGetter);
 
-        this.user = this.createBelongsToAccessorFor('user_id', userRepositoryGetter);
+        this.user = this.createBelongsToAccessorFor('user', userRepositoryGetter);
+        this.registerInclusionResolver('user', this.user.inclusionResolver);
 
-        this.role = this.createBelongsToAccessorFor('role_id', roleRepositoryGetter);
+        this.role = this.createBelongsToAccessorFor('role', roleRepositoryGetter);
+        this.registerInclusionResolver('role', this.role.inclusionResolver);
     }
 
-    async create(user: User): Promise<UserTenant> {
+    async createFromUser(user: User): Promise<UserTenant> {
         if (!user.id || !user.defaultTenant) {
             throw new HttpErrors.UnprocessableEntity(
                 'User Id or Default Tenant Id is missing in the request parameters'

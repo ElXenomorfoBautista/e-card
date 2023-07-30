@@ -24,7 +24,6 @@ export class RoleController {
         },
     })
     async create(@requestBody() role: Role): Promise<Role> {
-        console.info(role);
         return this.roleRepository.create(role);
     }
 
@@ -104,8 +103,6 @@ export class RoleController {
         },
     })
     async updateById(@param.path.number('id') id: number, @requestBody() role: Role): Promise<void> {
-        console.info('id', id);
-        console.info('role', role);
         await this.roleRepository.updateById(id, role);
     }
 
