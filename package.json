@@ -1,5 +1,5 @@
 {
-  "name": "loopback4-phs",
+  "name": "HIT-API",
   "version": "1.0.1",
   "description": "A boilerplate starter code base for setting up a loopback4 API for a multi-tenant application",
   "keywords": [
@@ -25,8 +25,8 @@
     "test": "lb-mocha --allow-console-logs \"dist/__tests__\"",
     "posttest": "npm run lint",
     "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
-    "docker:build": "docker build -t loopback4-phs .",
-    "docker:run": "docker run -p 3000:3000 -d loopback4-phs",
+    "docker:build": "docker build -t HIT-API .",
+    "docker:run": "docker run -p 3000:3000 -d HIT-API",
     "migrate": "node ./dist/migrate",
     "prestart": "npm run build",
     "start": "node -r source-map-support/register .",

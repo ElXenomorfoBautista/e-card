@@ -1,4 +1,3 @@
-import { SECURITY_SCHEME_SPEC } from '@loopback/authentication-jwt';
 import { Loopback4Application } from './application';
 import { ApplicationConfig } from '@loopback/core';
 

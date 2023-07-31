@@ -169,6 +169,23 @@ export class LoginController {
         }
     }
 
+    @authenticate(STRATEGY.BEARER)
+    @authorize({ permissions: ['*'] })
+    @get('/auth/auth-user')
+    async authUser(@param.header.string('Authorization') auth: string) {
+        try {
+            const token = auth?.replace(/bearer /i, '');
+            if (!token) {
+                throw new HttpErrors.Unauthorized(AuthErrorKeys.TokenInvalid);
+            }
+            const decoded = jwt.decode(token);
+            return decoded;
+        } catch (err) {
+            throw new HttpErrors.InternalServerError(AuthErrorKeys.UnknownError);
+        }
+        return true;
+    }
+
     @authorize({ permissions: ['*'] })
     @post('/auth/token-refresh', {
         responses: {
@@ -314,27 +331,10 @@ export class LoginController {
             } else if (payload.userId) {
                 user = await this.userRepo.findById(payload.userId);
             }
-            console.warn('user', user);
 
             if (!user) {
                 throw new HttpErrors.Unauthorized(AuthenticateErrorKeys.UserDoesNotExist);
             }
-            console.warn('user.getId()', user.getId());
-            console.warn('defaultTenant', user.defaultTenant);
-
-            const test = await this.userTenantRepo.count();
-            console.warn('test1', test);
-
-            const test2 = await this.userTenantRepo.findById(1);
-            console.warn('test2', test2);
-
-            const test3 = await this.userTenantRepo.find({
-                where: {
-                    userId: user.getId(),
-                    tenantId: user.defaultTenant,
-                },
-            });
-            console.warn('userTenant', test3);
 
             const userTenant = await this.userTenantRepo.findOne({
                 where: {
@@ -342,7 +342,6 @@ export class LoginController {
                     tenantId: user.defaultTenant,
                 },
             });
-            console.warn('userTenant', userTenant);
 
             if (!userTenant) {
                 throw new HttpErrors.Unauthorized(AuthenticateErrorKeys.UserDoesNotExist);
@@ -365,14 +364,11 @@ export class LoginController {
             authUser.permissions = this.getUserPermissions(utPerms, role.permissions);
             authUser.role = role.roleKey.toString();
             if (userTenant.id) authUser.userTenantId = userTenant.id;
-            console.warn('authUser', authUser);
 
             const accessToken = jwt.sign(authUser.toJSON(), process.env.JWT_SECRET as string, {
                 expiresIn: authClient.accessTokenExpiration,
                 issuer: process.env.JWT_ISSUER,
             });
-            console.warn('accessToken', accessToken);
-
             const size = 32,
                 ms = 1000;
             const refreshToken: string = crypto.randomBytes(size).toString('hex');

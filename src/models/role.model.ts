@@ -10,6 +10,7 @@ export class Role extends BaseEntity {
     @property({
         type: 'number',
         id: true,
+        generate: true,
     })
     id?: number;
 
@@ -22,6 +23,9 @@ export class Role extends BaseEntity {
     @property({
         type: 'array',
         itemType: 'string',
+        postgresql: {
+            dataType: 'varchar[]',
+        },
     })
     permissions: string[];
 

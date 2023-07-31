@@ -3,6 +3,7 @@ import { IAuthUser } from 'loopback4-authentication';
 
 import { UserCredentials, UserCredentialsWithRelations } from './user-credentials.model';
 import { UserModifiableEntity } from './user-modifiable-entity.model';
+import { UserTenant, UserTenantWithRelations } from './user-tenant.model';
 
 @model({
     name: 'users',
@@ -13,6 +14,7 @@ export class User extends UserModifiableEntity implements IAuthUser {
     @property({
         type: 'number',
         id: true,
+        generate: true,
     })
     id?: number;
 
@@ -69,6 +71,9 @@ export class User extends UserModifiableEntity implements IAuthUser {
     @hasOne(() => UserCredentials, { keyTo: 'userId' })
     credentials: UserCredentials;
 
+    @hasOne(() => UserTenant, { keyTo: 'userId' })
+    userTenant: UserTenant;
+
     constructor(data?: Partial<User>) {
         super(data);
     }
@@ -76,6 +81,7 @@ export class User extends UserModifiableEntity implements IAuthUser {
 
 export interface UserRelations {
     credentials: UserCredentialsWithRelations;
+    userTenant: UserTenantWithRelations;
 }
 
 export type UserWithRelations = User & UserRelations;
