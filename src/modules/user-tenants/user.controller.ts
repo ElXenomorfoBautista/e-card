@@ -13,17 +13,22 @@ import {
 } from '@loopback/rest';
 import { authenticate, STRATEGY } from 'loopback4-authentication';
 import { authorize } from 'loopback4-authorization';
-
 import { User } from '../../models';
 import { UserRepository, UserTenantRepository } from '../../repositories';
 import { PermissionKey } from '../auth/permission-key.enum';
+import { inject } from '@loopback/context';
+import { MultiTenancyBindings, Tenant } from '../../multi-tenancy';
+import debugFactory from 'debug';
+const debug = debugFactory('loopback:controller:user');
 
 export class UserController {
     constructor(
         @repository(UserRepository)
         public userRepository: UserRepository,
         @repository(UserTenantRepository)
-        public userTenantRepo: UserTenantRepository
+        public userTenantRepo: UserTenantRepository,
+        @inject(MultiTenancyBindings.CURRENT_TENANT, { optional: true })
+        private tenant?: Tenant
     ) {}
 
     @authenticate(STRATEGY.BEARER)
@@ -39,6 +44,7 @@ export class UserController {
         },
     })
     async create(@requestBody() user: User): Promise<User> {
+        debug('tenant %s', this.tenant);
         if (!user.id || !user.defaultTenant) {
             throw new HttpErrors.UnprocessableEntity(
                 'User Id or Default Tenant Id is missing in the request parameters'
@@ -86,6 +92,7 @@ export class UserController {
         @param.query.object('filter', getFilterSchemaFor(User))
         filter?: Filter<User>
     ): Promise<User[]> {
+        debug('tenant %s', this.tenant);
         return this.userRepository.find(filter);
     }
 
