@@ -16,7 +16,7 @@ export class UserTenant extends BaseEntity {
 
     @belongsTo(
         () => User,
-        { name: 'user_id' },
+        { name: 'user' },
         {
             name: 'user_id',
             required: true,
@@ -36,7 +36,7 @@ export class UserTenant extends BaseEntity {
 
     @belongsTo(
         () => Role,
-        { name: 'role_id' },
+        { name: 'role' },
         {
             name: 'role_id',
             required: true,

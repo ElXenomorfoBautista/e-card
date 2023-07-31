@@ -228,6 +228,6 @@ describe('Login Controller', () => {
             type: TenantType.APPLICATION,
         });
 
-        await userTenantRepository.create(user);
+        await userTenantRepository.createFromUser(user);
     }
 });

@@ -5,3 +5,6 @@ export * from '../modules/roles/role.controller';
 export * from '../modules/audit/audit-log.controller';
 export * from '../modules/auth/login.controller';
 export * from '../modules/auth/logout.controller';
+export * from './tenants-type.controller';
+export * from './user-tenant.controller';
+export * from './user-credential.controller';

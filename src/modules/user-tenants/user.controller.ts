@@ -19,6 +19,7 @@ import { PermissionKey } from '../auth/permission-key.enum';
 import { inject } from '@loopback/context';
 import { MultiTenancyBindings, Tenant } from '../../multi-tenancy';
 import debugFactory from 'debug';
+import { RoleService } from '../../services';
 const debug = debugFactory('loopback:controller:user');
 
 export class UserController {
@@ -28,7 +29,9 @@ export class UserController {
         @repository(UserTenantRepository)
         public userTenantRepo: UserTenantRepository,
         @inject(MultiTenancyBindings.CURRENT_TENANT, { optional: true })
-        private tenant?: Tenant
+        private tenant?: Tenant,
+        @inject('services.RoleService')
+        public roleService?: RoleService
     ) {}
 
     @authenticate(STRATEGY.BEARER)
@@ -45,14 +48,14 @@ export class UserController {
     })
     async create(@requestBody() user: User): Promise<User> {
         debug('tenant %s', this.tenant);
-        if (!user.id || !user.defaultTenant) {
+        debug('user %s', user);
+        if (!user.defaultTenant) {
             throw new HttpErrors.UnprocessableEntity(
                 'User Id or Default Tenant Id is missing in the request parameters'
             );
         }
         const response = await this.userRepository.create(user);
-        await this.userTenantRepo.create(user);
-
+        await this.userTenantRepo.createFromUser(response);
         return response;
     }
 

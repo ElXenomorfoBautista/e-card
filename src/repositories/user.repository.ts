@@ -6,23 +6,32 @@ import * as bcrypt from 'bcrypt';
 import { AuthenticationBindings, AuthErrorKeys } from 'loopback4-authentication';
 
 import { PgdbDataSource } from '../datasources';
-import { User, UserRelations, UserCredentials } from '../models';
+import { User, UserRelations, UserCredentials, UserTenant } from '../models';
 import { AuthUser } from '../modules/auth';
 import { AuthenticateErrorKeys } from '../modules/auth/error-keys';
 import { DefaultUserModifyCrudRepository } from './default-user-modify-crud.repository.base';
 import { UserCredentialsRepository } from './user-credentials.repository';
+import { UserTenantRepository } from './user-tenant.repository';
 
 export class UserRepository extends DefaultUserModifyCrudRepository<User, typeof User.prototype.id, UserRelations> {
     public readonly credentials: HasOneRepositoryFactory<UserCredentials, typeof User.prototype.id>;
+    public readonly userTenant: HasOneRepositoryFactory<UserTenant, typeof User.prototype.id>;
     constructor(
         @inject('datasources.pgdb') dataSource: PgdbDataSource,
         @inject.getter(AuthenticationBindings.CURRENT_USER)
         protected readonly getCurrentUser: Getter<AuthUser | undefined>,
         @repository.getter('UserCredentialsRepository')
-        getUserCredsRepository: Getter<UserCredentialsRepository>
+        getUserCredsRepository: Getter<UserCredentialsRepository>,
+
+        @repository.getter('UserTenantRepository')
+        getUserTenantRepository: Getter<UserTenantRepository>
     ) {
         super(User, dataSource, getCurrentUser);
         this.credentials = this.createHasOneRepositoryFactoryFor('credentials', getUserCredsRepository);
+        this.registerInclusionResolver('credentials', this.credentials.inclusionResolver);
+
+        this.userTenant = this.createHasOneRepositoryFactoryFor('userTenant', getUserTenantRepository);
+        this.registerInclusionResolver('userTenant', this.userTenant.inclusionResolver);
     }
 
     private readonly saltRounds = 10;
