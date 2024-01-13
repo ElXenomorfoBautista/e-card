@@ -67,15 +67,15 @@ export class AuthHandlerMiddlewareProvider implements Provider<Middleware> {
         debug('route %s', route);
         const args = await this.parseParams(request, route);
         request.body = args[args.length - 1];
-        await this.authenticateRequestClient(request);
+        const respAuthRequestClient = await this.authenticateRequestClient(request);
+        debug('respAuthRequestClient %', respAuthRequestClient);
         const authUser: AuthUser = await this.authenticateRequest(request, response);
+        debug('authUser %', authUser);
         const isAccessAllowed: boolean = await this.checkAuthorisation(authUser?.permissions, request);
         debug('isAccessAllowed %s', isAccessAllowed);
         if (!isAccessAllowed) {
             throw new HttpErrors.Forbidden(AuthorizeErrorKeys.NotAllowedAccess);
         }
 
-        const result = await this.invoke(route, args);
-        this.send(response, result);
     }
 }
