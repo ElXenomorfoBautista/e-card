@@ -69,6 +69,7 @@ export abstract class DefaultUserModifyCrudRepository<
             throw new HttpErrors.Forbidden(AuthErrorKeys.InvalidCredentials);
         }
         data.modifiedBy = currentUser.userTenantId;
+        data.modifiedOn = new Date();
         return super.updateAll(data, where, options);
     }
 
@@ -78,6 +79,7 @@ export abstract class DefaultUserModifyCrudRepository<
             throw new HttpErrors.Forbidden(AuthErrorKeys.InvalidCredentials);
         }
         data.modifiedBy = currentUser.userTenantId;
+        data.modifiedOn = new Date();
         return super.updateById(id, data, options);
     }
     async replaceById(id: ID, data: DataObject<T>, options?: Options): Promise<void> {
@@ -86,6 +88,7 @@ export abstract class DefaultUserModifyCrudRepository<
             throw new HttpErrors.Forbidden(AuthErrorKeys.InvalidCredentials);
         }
         data.modifiedBy = currentUser.userTenantId;
+        data.modifiedOn = new Date();
         return super.replaceById(id, data, options);
     }
 }

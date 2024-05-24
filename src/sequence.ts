@@ -30,7 +30,7 @@ export class MySequence implements SequenceHandler {
         @inject(AuthenticationBindings.CLIENT_AUTH_ACTION)
         protected authenticateRequestClient: AuthenticateFn<AuthClient>,
         @inject(AuthorizationBindings.AUTHORIZE_ACTION)
-        protected checkAuthorisation: AuthorizeFn
+        protected checkAuthorization: AuthorizeFn
     ) {}
 
     async handle(context: RequestContext) {
@@ -42,7 +42,7 @@ export class MySequence implements SequenceHandler {
             request.body = args[args.length - 1];
             await this.authenticateRequestClient(request);
             const authUser: AuthUser = await this.authenticateRequest(request, response);
-            const isAccessAllowed: boolean = await this.checkAuthorisation(authUser?.permissions, request);
+            const isAccessAllowed: boolean = await this.checkAuthorization(authUser?.permissions, request);
             if (!isAccessAllowed) {
                 throw new HttpErrors.Forbidden(AuthorizeErrorKeys.NotAllowedAccess);
             }

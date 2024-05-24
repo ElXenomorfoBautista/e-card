@@ -68,6 +68,18 @@ export class User extends UserModifiableEntity implements IAuthUser {
     })
     lastLogin?: string;
 
+    @property({
+        type: 'string',
+        name: 'image_path',
+    })
+    imagePath?: string;
+
+    @property({
+        type: 'string',
+        name: 'qr_path',
+    })
+    qrPath?: string;
+
     @hasOne(() => UserCredentials, { keyTo: 'userId' })
     credentials: UserCredentials;
 
