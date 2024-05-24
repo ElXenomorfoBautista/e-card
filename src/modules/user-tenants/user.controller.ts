@@ -19,7 +19,7 @@ import { PermissionKey } from '../auth/permission-key.enum';
 import { inject } from '@loopback/context';
 import { MultiTenancyBindings, Tenant } from '../../multi-tenancy';
 import debugFactory from 'debug';
-import { RoleService } from '../../services';
+import { RoleService, UserService } from '../../services';
 const debug = debugFactory('loopback:controller:user');
 
 export class UserController {
@@ -28,11 +28,13 @@ export class UserController {
         public userRepository: UserRepository,
         @repository(UserTenantRepository)
         public userTenantRepo: UserTenantRepository,
+        @inject('services.UserService')
+        private userService: UserService,
         @inject(MultiTenancyBindings.CURRENT_TENANT, { optional: true })
         private tenant?: Tenant,
         @inject('services.RoleService')
         public roleService?: RoleService
-    ) {}
+    ) { }
 
     @authenticate(STRATEGY.BEARER)
     @authorize({
@@ -177,5 +179,50 @@ export class UserController {
     })
     async deleteById(@param.path.number('id') id: number): Promise<void> {
         await this.userRepository.deleteById(id);
+    }
+
+    @authenticate(STRATEGY.BEARER)
+    @authorize({
+        permissions: [PermissionKey.CreateAnyUser, PermissionKey.CreateTenantUser],
+    })
+    @post('/users/send-card-email/{id}', {
+        responses: {
+            '200': {
+                description: 'Email the users card.',
+            }
+        }
+    })
+    async sendEmail(@param.path.number('id') id: number): Promise<any> {
+        return await this.userService.sendEmail(id);
+    }
+
+    @authenticate(STRATEGY.BEARER)
+    @authorize({
+        permissions: [PermissionKey.CreateAnyUser, PermissionKey.CreateTenantUser],
+    })
+    @post('/users/generate-qr-path/{id}', {
+        responses: {
+            '200': {
+                description: 'Creates the users QR.',
+            }
+        }
+    })
+    async generateUserQR(@param.path.number('id') id: number): Promise<any> {
+        return await this.userService.generateUserQR(id);
+    }
+
+    @authenticate(STRATEGY.BEARER)
+    @authorize({
+        permissions: [PermissionKey.CreateAnyUser, PermissionKey.CreateTenantUser],
+    })
+    @post('/users/generate-id-pdf/{id}', {
+        responses: {
+            '200': {
+                description: 'Creates the users a PDF.',
+            }
+        }
+    })
+    async generateUserPDF(@param.path.number('id') id: number): Promise<any> {
+        return await this.userService.generateCard(id);
     }
 }
