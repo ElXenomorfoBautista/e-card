@@ -64,3 +64,6 @@ api-docs/
 /dist
 
 *.tsbuildinfo
+
+# uploads files
+uploads/

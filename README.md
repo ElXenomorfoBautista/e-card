@@ -1,11 +1,17 @@
+## PHS Backend Guide
+
+https://phspro.atlassian.net/wiki/spaces/PHS/pages/48857089/Backend+-+LoopBack4+-+Node+Express+Typescript
+
+---
+
 # loopback4-phs
 
 [![LoopBack](<https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png>)](http://loopback.io/)
 
-[![Dependencies Status](https://img.shields.io/david/sourcefuse/loopback4-phs.svg?style=flat-square&label=Dependencies)](https://github.com/sourcefuse/loopback4-phs)
-[![Loopback Core Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/loopback4-phs/@loopback/core.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next)
-[![Loopback Build Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/loopback4-phs/dev/@loopback/build.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next/tree/master/packages/build)
-[![License](https://img.shields.io/github/license/sourcefuse/loopback4-phs.svg?color=blue&label=License&style=flat-square)](https://github.com/sourcefuse/loopback4-phs/blob/master/LICENSE)
+[![Dependencies Status](https://img.shields.io/david/sourcefuse/HIT-API.svg?style=flat-square&label=Dependencies)](https://github.com/sourcefuse/HIT-API)
+[![Loopback Core Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/HIT-API/@loopback/core.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next)
+[![Loopback Build Version](https://img.shields.io/github/package-json/dependency-version/sourcefuse/HIT-API/dev/@loopback/build.svg?color=dark%20green&style=flat-square)](https://github.com/strongloop/loopback-next/tree/master/packages/build)
+[![License](https://img.shields.io/github/license/sourcefuse/HIT-API.svg?color=blue&label=License&style=flat-square)](https://github.com/sourcefuse/HIT-API/blob/master/LICENSE)
 
 This is a LoopBack 4 starter application to get you upto speed with initial setup of a very standard REST API application with LoopBack 4 as framework. It provides you with all the core requisite features for most of the applications over and above framework features, viz.,
 
@@ -21,33 +27,33 @@ In addition to that, it also provides you with some of the good to have items
 1. Multi-tenant architecture system
 2. Soft deletes
 
-**NOTE: For a non multi-tenant starter, please refer to the branch [single_tenant](https://github.com/sourcefuse/loopback4-phs/tree/single_tenant).**
+**NOTE: For a non multi-tenant starter, please refer to the branch [single_tenant](https://github.com/sourcefuse/HIT-API/tree/single_tenant).**
 
 ## Table of Contents
 
-- [How to use](#How-to-use)
-  - [Clone the repository](#Clone-the-repository)
-  - [Install dependencies](#Install-dependencies)
-  - [Update app name](#Update-app-name)
-  - [Update git origin](#Update-git-origin)
-  - [Setup database](#Setup-database)
-  - [Setup redis](#Setup-redis)
-  - [Configure environment](#Configure-environment)
-  - [Run DB migrations](#Run-DB-migrations)
-  - [Start server](#Start-server)
-  - [API Explorer](#API-Explorer)
-- [Architecture overview](#Architecture-overview)
-  - [Database Model](#Database-Model)
-    - [Key Notes](#Key-Notes)
-    - [Multi-tenant system](#Multi-tenant-system)
-  - [Authentication](#Authentication)
-  - [Authorization](#Authorization)
-  - [Soft Delete](#Soft-Delete)
-  - [Audit Logs](#Audit-Logs)
-- [Feedback](#Feedback)
-- [Contributing](#Contributing)
-- [Code of conduct](#Code-of-conduct)
-- [License](#License)
+-   [How to use](#How-to-use)
+    -   [Clone the repository](#Clone-the-repository)
+    -   [Install dependencies](#Install-dependencies)
+    -   [Update app name](#Update-app-name)
+    -   [Update git origin](#Update-git-origin)
+    -   [Setup database](#Setup-database)
+    -   [Setup redis](#Setup-redis)
+    -   [Configure environment](#Configure-environment)
+    -   [Run DB migrations](#Run-DB-migrations)
+    -   [Start server](#Start-server)
+    -   [API Explorer](#API-Explorer)
+-   [Architecture overview](#Architecture-overview)
+    -   [Database Model](#Database-Model)
+        -   [Key Notes](#Key-Notes)
+        -   [Multi-tenant system](#Multi-tenant-system)
+    -   [Authentication](#Authentication)
+    -   [Authorization](#Authorization)
+    -   [Soft Delete](#Soft-Delete)
+    -   [Audit Logs](#Audit-Logs)
+-   [Feedback](#Feedback)
+-   [Contributing](#Contributing)
+-   [Code of conduct](#Code-of-conduct)
+-   [License](#License)
 
 ### How to use
 
@@ -58,27 +64,27 @@ _Do remember that this is just one of the way to use it. You can always build yo
 #### Clone the repository
 
 ```sh
-git clone https://github.com/sourcefuse/loopback4-phs.git
+git clone https://github.com/sourcefuse/HIT-API.git
 ```
 
 #### Install dependencies
 
 ```sh
-npm i
+npm i --force //TODO: update npm dependencies.
 ```
 
 #### Update app name
 
 Say the application you are developing is named 'To Do List'. Change as below.
 
-- Rename the directory to to-do-list.
-- package.json and package-lock.json - Replace loopback4-phs with to-do-list in entire file. Update description.
-- public/index.html - Update title tag and h1 tag inside body as per your app name.
-- src/application.ts - Rename class to ToDoListApplication and all its references. If you are using VSCode, select the class name, press F2 and then rename it. This will update all its references as well.
-- src/index.ts - Replace all refences of Loopback4Application with ToDoListApplication.
-- src/\_\_tests\_\_/\*\* - Replace all refences of Loopback4Application with ToDoListApplication.
-- Update README.md with details of your application
-- Update CONTRIBUTING.md with details as per your application.
+-   Rename the directory to to-do-list.
+-   package.json and package-lock.json - Replace HIT-API with to-do-list in entire file. Update description.
+-   public/index.html - Update title tag and h1 tag inside body as per your app name.
+-   src/application.ts - Rename class to ToDoListApplication and all its references. If you are using VSCode, select the class name, press F2 and then rename it. This will update all its references as well.
+-   src/index.ts - Replace all refences of Loopback4Application with ToDoListApplication.
+-   src/\_\_tests\_\_/\*\* - Replace all refences of Loopback4Application with ToDoListApplication.
+-   Update README.md with details of your application
+-   Update CONTRIBUTING.md with details as per your application.
 
 #### Update git origin
 
@@ -101,7 +107,7 @@ Setup a redis instance. Follow the quick start guide [here](https://redis.io/top
 
 #### Configure environment
 
-You need to configure your environment variables now. Copy [.env.example](https://github.com/sourcefuse/loopback4-phs/blob/master/.env.example) and rename as .env. Now provide values for the keys mentioned there. These are going to be database credentials ([created here](#setup-database)) and redis credentials ([created here](#setup-redis)). You don't need to provide all the keys though. For some of these (not needed to be secure keys), we have already specified default values in [.env.defaults](https://github.com/sourcefuse/loopback4-phs/blob/master/.env.defaults). You can remove them. You will require to fill at least these ones.
+You need to configure your environment variables now. Copy [.env.example](https://github.com/sourcefuse/HIT-API/blob/master/.env.example) and rename as .env. Now provide values for the keys mentioned there. These are going to be database credentials ([created here](#setup-database)) and redis credentials ([created here](#setup-redis)). You don't need to provide all the keys though. For some of these (not needed to be secure keys), we have already specified default values in [.env.defaults](https://github.com/sourcefuse/HIT-API/blob/master/.env.defaults). You can remove them. You will require to fill at least these ones.
 
 ```json
 DB_HOST=localhost
@@ -157,23 +163,23 @@ You can try out only the unsecured APIs here, like auth/login. The secure endpoi
 
 #### Database Model
 
-![db-schema](https://github.com/sourcefuse/loopback4-phs/blob/master/db-schema.png)
+![db-schema](https://github.com/sourcefuse/HIT-API/blob/master/db-schema.png)
 
 ##### Key Notes
 
-- Database used is Postgresql version 10 and above.
-- Database schema is based on multi-tenant architecture overall.
-- Each table have default columns - id (Primary Key), created_by, modified_by, created_on, modified_on, deleted.
+-   Database used is Postgresql version 10 and above.
+-   Database schema is based on multi-tenant architecture overall.
+-   Each table have default columns - id (Primary Key), created_by, modified_by, created_on, modified_on, deleted.
 
 ##### Multi-tenant system
 
-- Tenants are the organisational entities using the application.
-- Tenant types - Customer, Application (Umbrella Tenant for super admin work).
-- Every user will need be associated to a tenant in order to access the application.
-- User tenant has a m:n relationship, user_tenants table is the link table for the same.
-- Every user will have a role associated for every tenant it belongs to, role_id in user_tenants table.
-- Every role has associated permissions.
-- Each user may have some extra permissions (allowed or denied) per tenant over and above its role, user_tenant_permissions table takes care of it.
+-   Tenants are the organisational entities using the application.
+-   Tenant types - Customer, Application (Umbrella Tenant for super admin work).
+-   Every user will need be associated to a tenant in order to access the application.
+-   User tenant has a m:n relationship, user_tenants table is the link table for the same.
+-   Every user will have a role associated for every tenant it belongs to, role_id in user_tenants table.
+-   Every role has associated permissions.
+-   Each user may have some extra permissions (allowed or denied) per tenant over and above its role, user_tenant_permissions table takes care of it.
 
 For detailed description of database tables and columns, please open lbstarter.dbs in [DbSchema](https://www.dbschema.com/) tool.
 
@@ -185,16 +191,16 @@ _If you only want to use authentication, not the whole starter codebase, you can
 
 There are two different strategies of authentication used here.
 
-- **Oauth2 client password + Passport local** - This is a 2-step auth process
+-   **Oauth2 client password + Passport local** - This is a 2-step auth process
 
-  1. Client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login' API. After successful verification, it will return a jwt code containing client details, signed using client's private key (secret) stored in DB. Expiration time of code will be based on value in DB against that auth client.
-  2. Next, client will need to send this code along with client id and username to '/auth/token' API. After successful verification, it will return access token (jwt containing user details) and refresh token. Expiration time of token will be based on value in DB against that auth client.
+    1. Client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login' API. After successful verification, it will return a jwt code containing client details, signed using client's private key (secret) stored in DB. Expiration time of code will be based on value in DB against that auth client.
+    2. Next, client will need to send this code along with client id and username to '/auth/token' API. After successful verification, it will return access token (jwt containing user details) and refresh token. Expiration time of token will be based on value in DB against that auth client.
 
-  _The front end application will be mostly using this strategy._
+    _The front end application will be mostly using this strategy._
 
-- **Oauth2 resource owner password** - This is a single step process where in client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login-token' API. In this case, in addition to verifying client credentials and user password, system will also check if the user has permission to access APIs via this auth client. Only those auth clients which have associated userids can use this API for authentication.
+-   **Oauth2 resource owner password** - This is a single step process where in client need to send client credentials (client id and client public key) and user credentials (username and password) to '/auth/login-token' API. In this case, in addition to verifying client credentials and user password, system will also check if the user has permission to access APIs via this auth client. Only those auth clients which have associated userids can use this API for authentication.
 
-  _Any 3rd party application accessing your APIs will be using this strategy, like from AWS Lambda function._
+    _Any 3rd party application accessing your APIs will be using this strategy, like from AWS Lambda function._
 
 Once access token is obtained, it is needed to be passed into every API as Authorization bearer token header, which will be validated for access to API.
 
@@ -216,19 +222,19 @@ Audit logs are updated using DB triggers in this project. Refer to the lbstarter
 
 ### Feedback
 
-If you've noticed a bug or have a question or have a feature request, [search the issue tracker](https://github.com/sourcefuse/loopback4-phs/issues) to see if someone else in the community has already created a ticket.
-If not, go ahead and [make one](https://github.com/sourcefuse/loopback4-phs/issues/new/choose)!
+If you've noticed a bug or have a question or have a feature request, [search the issue tracker](https://github.com/sourcefuse/HIT-API/issues) to see if someone else in the community has already created a ticket.
+If not, go ahead and [make one](https://github.com/sourcefuse/HIT-API/issues/new/choose)!
 All feature requests are welcome. Implementation time may vary. Feel free to contribute the same, if you can.
 If you think this extension is useful, please [star](https://help.github.com/en/articles/about-stars) it. Appreciation really helps in keeping this project alive.
 
 ### Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/sourcefuse/loopback4-phs/blob/master/.github/CONTRIBUTING.md) for details on the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/sourcefuse/HIT-API/blob/master/.github/CONTRIBUTING.md) for details on the process for submitting pull requests to us.
 
 ### Code of conduct
 
-Code of conduct guidelines [here](https://github.com/sourcefuse/loopback4-phs/blob/master/.github/CODE_OF_CONDUCT.md).
+Code of conduct guidelines [here](https://github.com/sourcefuse/HIT-API/blob/master/.github/CODE_OF_CONDUCT.md).
 
 ### License
 
-[MIT](https://github.com/sourcefuse/loopback4-phs/blob/master/LICENSE)
+[MIT](https://github.com/sourcefuse/HIT-API/blob/master/LICENSE)

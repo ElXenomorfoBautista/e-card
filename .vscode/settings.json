@@ -7,7 +7,7 @@
 
   "sonarlint.connectedMode.project": {
     "serverId": "sf_sonar",
-    "projectKey": "sourcefuse_loopback4-phs"
+    "projectKey": "sourcefuse_HIT-API"
   },
 
   "files.exclude": {
