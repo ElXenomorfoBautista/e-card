@@ -10,3 +10,4 @@ export * from './auth-client.repository';
 export * from './revoked-token.repository';
 export * from './user-credentials.repository';
 export * from './tenants-type.repository';
+export * from './products.repository';
