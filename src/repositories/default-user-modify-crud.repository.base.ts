@@ -82,6 +82,7 @@ export abstract class DefaultUserModifyCrudRepository<
         data.modifiedOn = new Date();
         return super.updateById(id, data, options);
     }
+
     async replaceById(id: ID, data: DataObject<T>, options?: Options): Promise<void> {
         const currentUser = await this.getCurrentUser();
         if (!currentUser) {
