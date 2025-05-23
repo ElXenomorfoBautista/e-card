@@ -11,3 +11,4 @@ export * from './refresh-token.model';
 export * from './revoked-token.model';
 export * from './user-credentials.model';
 export * from './tenants-type.model';
+export * from './products.model';

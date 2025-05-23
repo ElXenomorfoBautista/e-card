@@ -9,3 +9,4 @@ export * from './tenants-type.controller';
 export * from './user-tenant.controller';
 export * from './user-credential.controller';
 export * from './file-upload.controller';
+export * from './products.controller';
