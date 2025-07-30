@@ -12,7 +12,7 @@ import {
     CardViewRepository,
     SocialNetworkTypeRepository,
 } from '../repositories';
-import { Card, CardBusinessHour } from '../models';
+import { Card, CardBusinessHour, CardWithRelations } from '../models';
 import { CreateCardRequest, DuplicateCardRequest, CardCompleteResponse, CardStatsResponse } from '../types/ecard.types';
 import { QRCodeGenerator } from './qr-generator.service';
 
@@ -295,24 +295,38 @@ export class CardService {
     // ===================================================
     async recordCardView(
         cardId: number,
-        viewerData: {
+        viewData: {
             ip?: string;
             userAgent?: string;
             referrer?: string;
             deviceType?: 'mobile' | 'desktop' | 'tablet';
         }
     ): Promise<void> {
-        // Registrar view detallada
-        await this.cardViewRepository.recordView(
-            cardId,
-            viewerData.ip,
-            viewerData.userAgent,
-            viewerData.referrer,
-            viewerData.deviceType
-        );
+        try {
+            // Crear registro de vista
+            await this.cardViewRepository.create({
+                cardId,
+                viewerIp: viewData.ip,
+                userAgent: viewData.userAgent,
+                referrer: viewData.referrer,
+                deviceType: viewData.deviceType,
+                viewedAt: new Date().toISOString(),
+            });
 
-        // Incrementar contador simple
-        await this.cardRepository.incrementViewCount(cardId);
+            // Incrementar contador de vistas en la tarjeta
+            await this.cardRepository.updateById(cardId, {
+                viewCount: await this.getCardViewCount(cardId),
+            });
+        } catch (error) {
+            console.error('Error recording card view:', error);
+            // No fallar si no se puede registrar
+        }
+    }
+
+    // Método auxiliar para contar vistas
+    private async getCardViewCount(cardId: number): Promise<number> {
+        const count = await this.cardViewRepository.count({ cardId });
+        return count.count;
     }
 
     // ===================================================
@@ -436,6 +450,71 @@ export class CardService {
             order: ['createdOn DESC'],
             limit,
             include: ['user', 'tenant', 'cardStyle'],
+        });
+    }
+    // Método para obtener tarjetas populares CON relaciones
+    async getPopularCardsWithRelations(limit: number = 10): Promise<CardWithRelations[]> {
+        return this.cardRepository.find({
+            where: { isActive: true, deleted: false },
+            order: ['viewCount DESC', 'createdOn DESC'],
+            limit,
+            include: [
+                {
+                    relation: 'user',
+                    scope: {
+                        fields: ['firstName', 'lastName'],
+                    },
+                },
+                {
+                    relation: 'tenant',
+                    scope: {
+                        fields: ['name'],
+                    },
+                },
+                {
+                    relation: 'cardStyle',
+                },
+            ],
+        });
+    }
+
+    // Método para buscar tarjetas CON relaciones
+    async searchCardsWithRelations(query: string, limit: number = 10): Promise<CardWithRelations[]> {
+        const searchTerm = `%${query.toLowerCase()}%`;
+
+        return this.cardRepository.find({
+            where: {
+                and: [
+                    { isActive: true },
+                    { deleted: false },
+                    {
+                        or: [
+                            { title: { ilike: searchTerm } },
+                            { profession: { ilike: searchTerm } },
+                            { description: { ilike: searchTerm } },
+                        ],
+                    },
+                ],
+            },
+            order: ['viewCount DESC', 'title ASC'],
+            limit,
+            include: [
+                {
+                    relation: 'user',
+                    scope: {
+                        fields: ['firstName', 'lastName'],
+                    },
+                },
+                {
+                    relation: 'tenant',
+                    scope: {
+                        fields: ['name'],
+                    },
+                },
+                {
+                    relation: 'cardStyle',
+                },
+            ],
         });
     }
 }

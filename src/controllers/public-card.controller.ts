@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// ===================================================
+// src/controllers/public-card.controller.ts
+// ===================================================
+
 import { inject } from '@loopback/core';
 import { get, param, response, Request, RestBindings, HttpErrors } from '@loopback/rest';
 import { service } from '@loopback/core';
@@ -5,7 +10,20 @@ import { authorize } from 'loopback4-authorization';
 
 import { CardService } from '../services';
 import { CardCompleteResponse } from '../types/ecard.types';
-
+interface PublicCardSummary {
+    id: number;
+    slug: string;
+    title: string;
+    profession?: string;
+    logoUrl?: string;
+    viewCount: number;
+    ownerName: string;
+    tenantName: string;
+    styles: {
+        primaryColor: string;
+        backgroundColor: string;
+    };
+}
 export class PublicCardController {
     constructor(
         @service(CardService)
@@ -179,6 +197,7 @@ export class PublicCardController {
                                     primaryColor: { type: 'string' },
                                     backgroundColor: { type: 'string' },
                                 },
+                                // QUITAR las propiedades que no estamos enviando
                             },
                         },
                     },
@@ -186,22 +205,25 @@ export class PublicCardController {
             },
         },
     })
-    async getPublicPopularCards(@param.query.number('limit') limit?: number): Promise<Partial<CardCompleteResponse>[]> {
-        const cards = await this.cardService.getPopularCards(limit ?? 10);
+    async getPublicPopularCards(@param.query.number('limit') limit?: number): Promise<PublicCardSummary[]> {
+        // CAMBIO: Incluir relaciones necesarias
+        const cards = await this.cardService.getPopularCardsWithRelations(limit ?? 10);
 
         // Filtrar solo tarjetas activas y devolver datos básicos
         return cards
             .filter((card) => card.isActive)
             .map((card) => ({
-                id: card.id,
+                id: card.id!,
                 slug: card.slug,
                 title: card.title,
                 profession: card.profession,
                 logoUrl: card.logoUrl,
                 viewCount: card.viewCount,
+                // CORRECCIÓN: Ahora las relaciones están cargadas
                 ownerName: `${card.user?.firstName || ''} ${card.user?.lastName || ''}`.trim(),
                 tenantName: card.tenant?.name || '',
                 styles: {
+                    // CORRECCIÓN: Solo las propiedades necesarias para la vista pública
                     primaryColor: card.cardStyle?.primaryColor || '#007bff',
                     backgroundColor: card.cardStyle?.backgroundColor || '#ffffff',
                 },
@@ -230,6 +252,7 @@ export class PublicCardController {
                             logoUrl: { type: 'string' },
                             ownerName: { type: 'string' },
                             tenantName: { type: 'string' },
+                            // QUITAR la propiedad styles si no la estamos enviando
                         },
                     },
                 },
@@ -239,14 +262,15 @@ export class PublicCardController {
     async searchPublicCards(
         @param.path.string('query') query: string,
         @param.query.number('limit') limit?: number
-    ): Promise<Partial<CardCompleteResponse>[]> {
-        const cards = await this.cardService.searchCards(query, limit || 10);
+    ): Promise<any[]> {
+        // CAMBIO: Usar método que incluye relaciones
+        const cards = await this.cardService.searchCardsWithRelations(query, limit ?? 10);
 
         // Filtrar solo tarjetas activas y devolver datos básicos
         return cards
             .filter((card) => card.isActive)
             .map((card) => ({
-                id: card.id,
+                id: card.id!,
                 slug: card.slug,
                 title: card.title,
                 profession: card.profession,
@@ -302,18 +326,20 @@ export class PublicCardController {
             const viewerData = {
                 ip: this.getClientIp(),
                 userAgent: this.request.headers['user-agent'],
-                referrer: this.request.headers.referer ?? this.request.headers.referrer,
+                // CORRECCIÓN: Manejar referrer como string o array
+                referrer: Array.isArray(this.request.headers.referer)
+                    ? this.request.headers.referer[0]
+                    : this.request.headers.referer ?? this.request.headers.referrer,
                 deviceType: this.detectDeviceType(this.request.headers['user-agent'] ?? ''),
             };
 
-            // Registrar la visualización
+            // Registrar la vista
             await this.cardService.recordCardView(cardId, viewerData);
         } catch (error) {
-            // No fallar si hay error al registrar view
-            console.warn('Error recording card view:', error);
+            // No fallar si no se puede registrar la vista
+            console.error('Error recording card view:', error);
         }
     }
-
     // ===================================================
     // UTILIDADES PRIVADAS
     // ===================================================
