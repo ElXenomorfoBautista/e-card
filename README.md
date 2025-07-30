@@ -95,7 +95,7 @@ git remote set-url origin https://github.com/USERNAME/REPOSITORY.git
 #### Setup database
 
 Database supported in this starter project is postgresql. But you can use any other SQL database. You will need to replace _loopback-connector-postgresql_ in dependencies with your required connector. If you are using postgresql, follow as below.
-Setup a [postgresql](https://www.postgresql.org/) instance. Create a database named **project_name**.
+Setup a [postgresql](https://www.postgresql.org/) instance. Create a database named **e_card**.
 DB Schema will be setup automatically via our aplication later.
 
 We are using [DbSchema](https://www.dbschema.com/) in this starter project to design our ERD for database. You can replace lbstarter.dbs with your own schema file.
@@ -114,8 +114,8 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=********
-DB_DATABASE=project_name
-DB_SCHEMA=project_name
+DB_DATABASE=e_card
+DB_SCHEMA=e_card
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_URL=
@@ -129,7 +129,7 @@ In this project, we are using [db-migrate](https://db-migrate.readthedocs.io/en/
 
 LoopBack4 also provides [auto migration](https://loopback.io/doc/en/lb4/Database-migrations.html) from models to DB but considering that its not guaranteed to be safe as mentioned [here](https://loopback.io/doc/en/lb4/Database-migrations.html#overview), we prefer to keep DB stuff outside of the ORM layer. This also helps in abstracting our models in codebase from DB tables. If you are good with LB4 way, please ignore below.
 
-Replace all occurences of 'lbstarter' with 'project_name' in ./migrations folder.
+Replace all occurences of 'lbstarter' with 'e_card' in ./migrations folder.
 Run the below command to setup the database schema and tables with initial seed data.
 
 ```sh
@@ -140,7 +140,7 @@ The above will setup the database as per the diagram [here](#database-model). It
 
 ```json
 username=super_admin
-password=test123!@#
+password=test1234!
 ```
 
 #### Start server

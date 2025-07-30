@@ -58,7 +58,7 @@ describe('Login Controller', () => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             client_secret: 'blah1',
             username: 'super_admin',
-            password: 'test123!@#',
+            password: 'test1234!',
         };
 
         const response = await client.post(`/auth/login`).send(reqData).expect(401);

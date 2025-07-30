@@ -1,4 +1,4 @@
-SET search_path TO project_name,public;
+SET search_path TO e_card,public;
 
 CREATE TABLE
     tenants_type (

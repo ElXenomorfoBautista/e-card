@@ -1,3 +1,3 @@
-SET search_path TO project_name,public;
+SET search_path TO e_card,public;
 
-DROP TABLE project_name.products;
+DROP TABLE e_card.products;

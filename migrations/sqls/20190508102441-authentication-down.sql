@@ -1,1 +1,1 @@
-DROP TABLE project_name.auth_clients;
+DROP TABLE e_card.auth_clients;

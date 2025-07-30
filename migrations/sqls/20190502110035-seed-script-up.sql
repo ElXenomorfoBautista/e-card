@@ -1,5 +1,5 @@
 /* Replace with your SQL commands */
-SET search_path TO project_name,public;
+SET search_path TO e_card,public;
 
 insert into roles
   (id, name, role_key, permissions)
@@ -19,7 +19,7 @@ insert into tenants
   values
   (1, 'application', 'application');
 
-/* Password - test123!@# */
+/* Password - test1234! */
 insert into users
   (id, first_name, last_name, username, password, default_tenant)
   values

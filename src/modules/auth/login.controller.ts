@@ -16,7 +16,7 @@ import { URLSearchParams } from 'url';
 
 import { CONTENT_TYPE } from '../../controllers/content-type.constant';
 import { STATUS_CODE } from '../../controllers/status-codes.enum';
-import { AuthClient, RefreshToken, User } from '../../models';
+import { AuthClient, RefreshToken, User, UserWithRelations } from '../../models';
 import {
     AuthClientRepository,
     RefreshTokenRepository,
@@ -93,7 +93,73 @@ export class LoginController {
             throw new HttpErrors.InternalServerError(AuthErrorKeys.InvalidCredentials);
         }
     }
+    @authenticateClient(STRATEGY.CLIENT_PASSWORD)
+    @authenticate(STRATEGY.LOCAL)
+    @authorize({ permissions: ['*'] })
+    @post('/auth/login/user', {
+        responses: {
+            [STATUS_CODE.OK]: {
+                description: 'Auth Code',
+                content: {
+                    [CONTENT_TYPE.JSON]: Object,
+                },
+            },
+        },
+    })
+    async loginWithUser(
+        @requestBody()
+        req: LoginRequest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ): Promise<{ token: TokenResponse; user: UserWithRelations | any }> {
+        if (!this.client || !this.user) {
+            throw new HttpErrors.Unauthorized(AuthErrorKeys.ClientInvalid);
+        } else if (!req.client_secret) {
+            throw new HttpErrors.BadRequest(AuthErrorKeys.ClientSecretMissing);
+        }
+        try {
+            const authClient = await this.authClientRepository.findOne({
+                where: {
+                    clientId: req.client_id,
+                },
+            });
 
+            if (!authClient) {
+                throw new HttpErrors.Unauthorized(AuthErrorKeys.ClientInvalid);
+            }
+
+            const codePayload: ClientAuthCode<User> = {
+                clientId: req.client_id,
+                userId: this.user.id,
+            };
+            const tokenCode = jwt.sign(codePayload, this.client.secret, {
+                expiresIn: this.client.authCodeExpiration,
+                audience: req.client_id,
+                subject: req.username,
+                issuer: process.env.JWT_ISSUER,
+            });
+            const payload: ClientAuthCode<User> = jwt.verify(tokenCode, authClient.secret, {
+                audience: req.client_id,
+                subject: req.username,
+                issuer: process.env.JWT_ISSUER,
+            }) as ClientAuthCode<User>;
+
+            const token = await this.createJWT(payload, authClient);
+
+            const accessToken = token.accessToken?.replace(/bearer /i, '');
+            if (!accessToken) {
+                throw new HttpErrors.Unauthorized(AuthErrorKeys.TokenInvalid);
+            }
+            const decoded = jwt.decode(accessToken);
+            const user: Partial<User> = {
+                lastLogin: new Date().toISOString(),
+            };
+
+            await this.userRepo.updateById(this.user.id, user);
+            return { token: token, user: decoded };
+        } catch (error) {
+            throw new HttpErrors.InternalServerError(AuthErrorKeys.InvalidCredentials);
+        }
+    }
     @authenticateClient(STRATEGY.CLIENT_PASSWORD)
     @authenticate(STRATEGY.OAUTH2_RESOURCE_OWNER_GRANT)
     @authorize({ permissions: ['*'] })
