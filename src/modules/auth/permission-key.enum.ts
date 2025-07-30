@@ -24,4 +24,18 @@ export const enum PermissionKey {
     CreateAudit = 'CreateAudit',
     UpdateAudit = 'UpdateAudit',
     DeleteAudit = 'DeleteAudit',
+
+    CreateCard = 'CreateCard',
+    ViewOwnCard = 'ViewOwnCard',
+    ViewAnyCard = 'ViewAnyCard',
+    UpdateOwnCard = 'UpdateOwnCard',
+    UpdateAnyCard = 'UpdateAnyCard',
+    DeleteOwnCard = 'DeleteOwnCard',
+    DeleteAnyCard = 'DeleteAnyCard',
+    ViewCardStats = 'ViewCardStats',
+    DuplicateCard = 'DuplicateCard',
+
+    ManageCardStyles = 'ManageCardStyles',
+    ViewCardAnalytics = 'ViewCardAnalytics',
+    ExportCardData = 'ExportCardData',
 }
