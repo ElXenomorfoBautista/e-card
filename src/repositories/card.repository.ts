@@ -65,7 +65,9 @@ export class CardRepository extends DefaultUserModifyCrudRepository<Card, typeof
         @repository.getter('CardBusinessHourRepository')
         getCardBusinessHourRepository: Getter<CardBusinessHourRepository>,
         @repository.getter('CardViewRepository')
-        getCardViewRepository: Getter<CardViewRepository>
+        getCardViewRepository: Getter<CardViewRepository>,
+        @repository(CardViewRepository)
+        public cardViewRepo: CardViewRepository
     ) {
         super(Card, dataSource, getCurrentUser);
 
@@ -255,8 +257,7 @@ export class CardRepository extends DefaultUserModifyCrudRepository<Card, typeof
     // Obtener estadísticas básicas de una tarjeta
     async getCardStats(cardId: number) {
         const card = await this.findById(cardId);
-        const viewsRepository = this.views(cardId);
-        const viewsCount = await viewsRepository.count();
+        const viewsCount = await this.cardViewRepo.count({ cardId });
         const uniqueVisitors = await this.dataSource.execute(
             'SELECT COUNT(DISTINCT viewer_ip) as unique_count FROM e_card.card_views WHERE card_id = $1 AND deleted = false',
             [cardId]
