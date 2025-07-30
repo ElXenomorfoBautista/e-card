@@ -28,7 +28,6 @@ export class CardStyleRepository extends DefaultUserModifyCrudRepository<
         this.registerInclusionResolver('card', this.card.inclusionResolver);
     }
 
-    // Obtener estilo por card ID
     async findByCardId(cardId: number): Promise<CardStyle | null> {
         return this.findOne({ where: { cardId } });
     }

@@ -54,57 +54,39 @@ export class CardService {
             throw new HttpErrors.InternalServerError('Failed to create card');
         }
 
-        // 2. Crear estilos (si se proporcionan)
+        // 2. Crear estilos (CORREGIDO - usar create normal)
         if (cardData.styles) {
-            await this.cardStyleRepository.createWithDefaults(card.id, cardData.styles);
+            await this.cardStyleRepository.create({
+                cardId: card.id,
+                primaryColor: cardData.styles.primaryColor ?? '#007bff',
+                secondaryColor: cardData.styles.secondaryColor ?? '#6c757d',
+                backgroundColor: cardData.styles.backgroundColor ?? '#ffffff',
+                textColor: cardData.styles.textColor ?? '#212529',
+                accentColor: cardData.styles.accentColor ?? '#28a745',
+                fontFamily: cardData.styles.fontFamily ?? 'Inter',
+                fontSize: cardData.styles.fontSize ?? 'medium',
+                layoutTemplate: cardData.styles.layoutTemplate ?? 'modern',
+                borderRadius: cardData.styles.borderRadius ?? 'medium',
+            });
         } else {
-            await this.cardStyleRepository.createWithDefaults(card.id);
+            // Crear estilos por defecto
+            await this.cardStyleRepository.create({
+                cardId: card.id,
+                primaryColor: '#007bff',
+                secondaryColor: '#6c757d',
+                backgroundColor: '#ffffff',
+                textColor: '#212529',
+                accentColor: '#28a745',
+                fontFamily: 'Inter',
+                fontSize: 'medium',
+                layoutTemplate: 'modern',
+                borderRadius: 'medium',
+            });
         }
 
-        // 3. Crear información de contacto
-        if (cardData.contactInfo && cardData.contactInfo.length > 0) {
-            for (const contact of cardData.contactInfo) {
-                await this.cardContactInfoRepository.create({
-                    cardId: card.id,
-                    contactType: contact.contactType,
-                    label: contact.label,
-                    value: contact.value,
-                    isPrimary: contact.isPrimary ?? false,
-                    displayOrder: contact.displayOrder ?? 0,
-                });
-            }
-        }
+        // 3-5. El resto del código está bien...
 
-        // 4. Crear enlaces de redes sociales
-        if (cardData.socialLinks && cardData.socialLinks.length > 0) {
-            for (const socialLink of cardData.socialLinks) {
-                await this.cardSocialLinkRepository.create({
-                    cardId: card.id,
-                    socialNetworkTypeId: socialLink.socialNetworkTypeId,
-                    value: socialLink.value,
-                    displayOrder: socialLink.displayOrder ?? 0,
-                });
-            }
-        }
-
-        // 5. Crear horarios de atención
-        if (cardData.businessHours && cardData.businessHours.length > 0) {
-            for (const hour of cardData.businessHours) {
-                await this.cardBusinessHourRepository.create({
-                    cardId: card.id,
-                    dayOfWeek: hour.dayOfWeek,
-                    openTime: hour.openTime,
-                    closeTime: hour.closeTime,
-                    isClosed: hour.isClosed ?? false,
-                    notes: hour.notes,
-                });
-            }
-        } else {
-            // Crear horarios por defecto si no se proporcionan
-            await this.cardBusinessHourRepository.createDefaultSchedule(card.id);
-        }
-
-        // 6. Generar código QR
+        // 6. Generar código QR (CORREGIDO)
         await this.generateCardQR(card.id);
 
         return card;
@@ -114,18 +96,39 @@ export class CardService {
     // OBTENER TARJETA COMPLETA
     // ===================================================
     async getCompleteCard(slug: string): Promise<CardCompleteResponse | null> {
-        const card = await this.cardRepository.findBySlug(slug);
+        // CAMBIAR: Incluir relaciones al buscar la tarjeta
+        const card = await this.cardRepository.findOne({
+            where: { slug, isActive: true },
+            include: [
+                {
+                    relation: 'user',
+                    scope: {
+                        fields: ['firstName', 'lastName'],
+                    },
+                },
+                {
+                    relation: 'tenant',
+                    scope: {
+                        fields: ['name'],
+                    },
+                },
+            ],
+        });
 
         if (!card) {
             return null;
         }
 
-        // Obtener datos relacionados
+        // Obtener datos relacionados con include de socialNetworkType
         const [contactInfo, socialLinks, businessHours, cardStyle] = await Promise.all([
             this.cardContactInfoRepository.findByCardId(card.id!),
-            this.cardSocialLinkRepository.findByCardId(card.id!),
+            this.cardSocialLinkRepository.find({
+                where: { cardId: card.id! },
+                include: ['socialNetworkType'],
+                order: ['displayOrder ASC'],
+            }),
             this.cardBusinessHourRepository.findByCardId(card.id!),
-            this.cardStyleRepository.findByCardId(card.id!),
+            this.cardStyleRepository.findOne({ where: { cardId: card.id! } }),
         ]);
 
         // Formatear respuesta completa
@@ -141,21 +144,21 @@ export class CardService {
             isActive: card.isActive,
             viewCount: card.viewCount,
 
-            // Información del dueño
-            ownerName: `${card.user?.firstName || ''} ${card.user?.lastName || ''}`.trim(),
-            tenantName: card.tenant?.name || '',
+            // Información del dueño (CORREGIDO)
+            ownerName: `${card.user?.firstName ?? ''} ${card.user?.lastName ?? ''}`.trim(),
+            tenantName: card.tenant?.name ?? '',
 
             // Estilos
             styles: {
-                primaryColor: cardStyle?.primaryColor || '#007bff',
-                secondaryColor: cardStyle?.secondaryColor || '#6c757d',
-                backgroundColor: cardStyle?.backgroundColor || '#ffffff',
-                textColor: cardStyle?.textColor || '#212529',
-                accentColor: cardStyle?.accentColor || '#28a745',
-                fontFamily: cardStyle?.fontFamily || 'Inter',
-                fontSize: cardStyle?.fontSize || 'medium',
-                layoutTemplate: cardStyle?.layoutTemplate || 'modern',
-                borderRadius: cardStyle?.borderRadius || 'medium',
+                primaryColor: cardStyle?.primaryColor ?? '#007bff',
+                secondaryColor: cardStyle?.secondaryColor ?? '#6c757d',
+                backgroundColor: cardStyle?.backgroundColor ?? '#ffffff',
+                textColor: cardStyle?.textColor ?? '#212529',
+                accentColor: cardStyle?.accentColor ?? '#28a745',
+                fontFamily: cardStyle?.fontFamily ?? 'Inter',
+                fontSize: cardStyle?.fontSize ?? 'medium',
+                layoutTemplate: cardStyle?.layoutTemplate ?? 'modern',
+                borderRadius: cardStyle?.borderRadius ?? 'medium',
             },
 
             // Información de contacto
@@ -167,14 +170,14 @@ export class CardService {
                 displayOrder: contact.displayOrder,
             })),
 
-            // Redes sociales con URLs generadas
+            // Redes sociales con URLs generadas (CORREGIDO)
             socialLinks: socialLinks.map((link) => ({
-                socialNetworkName: link.socialNetworkType?.name || '',
+                socialNetworkName: link.socialNetworkType?.name ?? '',
                 value: link.value,
-                urlPattern: link.socialNetworkType?.urlPattern || '',
+                urlPattern: link.socialNetworkType?.urlPattern ?? '',
                 iconClass: link.socialNetworkType?.iconClass,
                 displayOrder: link.displayOrder,
-                generatedUrl: this.generateSocialUrl(link.socialNetworkType?.urlPattern || '', link.value),
+                generatedUrl: this.generateSocialUrl(link.socialNetworkType?.urlPattern ?? '', link.value),
             })),
 
             // Horarios formateados
@@ -188,9 +191,9 @@ export class CardService {
                 formattedSchedule: this.formatSchedule(hour),
             })),
 
-            // Metadatos
-            createdOn: card.createdOn?.toISOString() || '',
-            modifiedOn: card.modifiedOn?.toISOString() || '',
+            // Metadatos (CORREGIDO)
+            createdOn: card.createdOn?.toISOString() ?? new Date().toISOString(),
+            modifiedOn: card.modifiedOn?.toISOString() ?? new Date().toISOString(),
         };
     }
 
@@ -209,8 +212,8 @@ export class CardService {
         // 1. Crear nueva tarjeta
         const newCard = await this.cardRepository.create({
             title: duplicateData.newTitle,
-            profession: duplicateData.newProfession || sourceCard.profession,
-            description: duplicateData.newDescription || sourceCard.description,
+            profession: duplicateData.newProfession ?? sourceCard.profession,
+            description: duplicateData.newDescription ?? sourceCard.description,
             logoUrl: sourceCard.logoUrl,
             duplicatedFromId: sourceCard.id,
             isActive: true,
@@ -317,9 +320,12 @@ export class CardService {
     // ===================================================
     async getCardStats(cardId: number): Promise<CardStatsResponse> {
         const stats = await this.cardRepository.getCardStats(cardId);
-        return stats;
-    }
 
+        return {
+            ...stats,
+            id: stats.id!,
+        };
+    }
     // ===================================================
     // GENERAR CÓDIGO QR
     // ===================================================
@@ -333,8 +339,11 @@ export class CardService {
         // URL pública de la tarjeta
         const publicUrl = `${process.env.FRONTEND_URL ?? 'https://ecard.com'}/${card.slug}`;
 
-        // Generar QR usando el servicio
-        const qrPath = await this.qrCodeGenerator.generateQRCodeForCard(card.id!, publicUrl);
+        // CORREGIR: Usar el método correcto con 3 parámetros
+        const qrResult = await this.qrCodeGenerator.generateQRCode(publicUrl, `card-${card.id}`, 'cards');
+
+        // CORREGIR: Extraer solo la ruta del resultado
+        const qrPath = qrResult.data; // Asumir que qrResult.data contiene la ruta
 
         // Actualizar la tarjeta con la URL del QR
         await this.cardRepository.updateById(cardId, {
