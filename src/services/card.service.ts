@@ -40,6 +40,7 @@ export class CardService {
     // ===================================================
     // CREAR TARJETA COMPLETA
     // ===================================================
+
     async createCompleteCard(cardData: CreateCardRequest): Promise<Card> {
         // 1. Crear tarjeta principal
         const card = await this.cardRepository.create({
@@ -54,7 +55,7 @@ export class CardService {
             throw new HttpErrors.InternalServerError('Failed to create card');
         }
 
-        // 2. Crear estilos (CORREGIDO - usar create normal)
+        // 2. Crear estilos
         if (cardData.styles) {
             await this.cardStyleRepository.create({
                 cardId: card.id,
@@ -84,9 +85,47 @@ export class CardService {
             });
         }
 
-        // 3-5. El resto del código está bien...
+        // 3. Crear información de contacto
+        if (cardData.contactInfo && cardData.contactInfo.length > 0) {
+            for (const contact of cardData.contactInfo) {
+                await this.cardContactInfoRepository.create({
+                    cardId: card.id,
+                    contactType: contact.contactType,
+                    label: contact.label,
+                    value: contact.value,
+                    isPrimary: contact.isPrimary ?? false,
+                    displayOrder: contact.displayOrder ?? 0,
+                });
+            }
+        }
 
-        // 6. Generar código QR (CORREGIDO)
+        // 4. Crear redes sociales
+        if (cardData.socialLinks && cardData.socialLinks.length > 0) {
+            for (const socialLink of cardData.socialLinks) {
+                await this.cardSocialLinkRepository.create({
+                    cardId: card.id,
+                    socialNetworkTypeId: socialLink.socialNetworkTypeId,
+                    value: socialLink.value,
+                    displayOrder: socialLink.displayOrder ?? 0,
+                });
+            }
+        }
+
+        // 5. Crear horarios de atención
+        if (cardData.businessHours && cardData.businessHours.length > 0) {
+            for (const hour of cardData.businessHours) {
+                await this.cardBusinessHourRepository.create({
+                    cardId: card.id,
+                    dayOfWeek: hour.dayOfWeek,
+                    openTime: hour.openTime,
+                    closeTime: hour.closeTime,
+                    isClosed: hour.isClosed ?? false,
+                    notes: hour.notes,
+                });
+            }
+        }
+
+        // 6. Generar código QR
         await this.generateCardQR(card.id);
 
         return card;
@@ -143,7 +182,7 @@ export class CardService {
             qrCodeUrl: card.qrCodeUrl,
             isActive: card.isActive,
             viewCount: card.viewCount,
-
+            previewUrl: `${process.env.BACKEND_URL}/cards/${card.id}/preview`,
             // Información del dueño (CORREGIDO)
             ownerName: `${card.user?.firstName ?? ''} ${card.user?.lastName ?? ''}`.trim(),
             tenantName: card.tenant?.name ?? '',

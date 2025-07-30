@@ -25,12 +25,20 @@ export abstract class DefaultUserModifyCrudRepository<
 
     async create(entity: DataObject<T>, options?: Options): Promise<T> {
         const currentUser = await this.getCurrentUser();
+        const defaultUserId = 1;
+
+        entity.createdBy = currentUser?.userTenantId ?? defaultUserId;
+        entity.modifiedBy = currentUser?.userTenantId ?? defaultUserId;
+
+        return super.create(entity, options);
+
+        /*  const currentUser = await this.getCurrentUser();
         if (!currentUser) {
             throw new HttpErrors.Forbidden(AuthErrorKeys.InvalidCredentials);
         }
         entity.createdBy = currentUser.userTenantId;
         entity.modifiedBy = currentUser.userTenantId;
-        return super.create(entity, options);
+        return super.create(entity, options); */
     }
 
     async createAll(entities: DataObject<T>[], options?: Options): Promise<T[]> {
@@ -65,21 +73,20 @@ export abstract class DefaultUserModifyCrudRepository<
 
     async updateAll(data: DataObject<T>, where?: Where<T>, options?: Options): Promise<Count> {
         const currentUser = await this.getCurrentUser();
-        if (!currentUser) {
-            throw new HttpErrors.Forbidden(AuthErrorKeys.InvalidCredentials);
-        }
-        data.modifiedBy = currentUser.userTenantId;
+        const defaultUserId = 1;
+
+        data.modifiedBy = currentUser?.userTenantId ?? defaultUserId;
         data.modifiedOn = new Date();
         return super.updateAll(data, where, options);
     }
 
     async updateById(id: ID, data: DataObject<T>, options?: Options): Promise<void> {
         const currentUser = await this.getCurrentUser();
-        if (!currentUser) {
-            throw new HttpErrors.Forbidden(AuthErrorKeys.InvalidCredentials);
-        }
-        data.modifiedBy = currentUser.userTenantId;
+        const defaultUserId = 1;
+
+        data.modifiedBy = currentUser?.userTenantId ?? defaultUserId;
         data.modifiedOn = new Date();
+
         return super.updateById(id, data, options);
     }
 

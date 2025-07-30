@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-shadow */
 import { Count, CountSchema, Filter, FilterExcludingWhere, repository, Where } from '@loopback/repository';
 import {
@@ -733,74 +734,67 @@ export class CardController {
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="white" opacity="0.1"/><circle cx="80" cy="80" r="2" fill="white" opacity="0.1"/><circle cx="40" cy="60" r="1" fill="white" opacity="0.1"/></svg>');
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="white" opacity="0.1"/><circle cx="80" cy="80" r="2" fill="white" opacity="0.1"/></svg>');
+            pointer-events: none;
         }
 
-        .card-header * {
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 4px solid white;
+            object-fit: cover;
             position: relative;
             z-index: 1;
         }
 
-        .logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: ${card.styles.primaryColor};
-            border: 3px solid white;
-        }
-
         .card-title {
-            font-size: 28px;
+            font-size: 2.2rem;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
         }
 
         .card-profession {
-            font-size: 16px;
+            font-size: 1.2rem;
             opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
         }
 
-        .card-content {
+        .card-body {
             padding: 30px;
         }
 
         .description {
             color: ${card.styles.textColor};
-            font-size: 16px;
+            font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 30px;
             text-align: center;
         }
 
         .section {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         .section-title {
             color: ${card.styles.primaryColor};
-            font-size: 18px;
+            font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-bottom: 2px solid ${card.styles.primaryColor}33;
+            padding-bottom: 5px;
         }
 
         .contact-item, .social-item {
             display: flex;
             align-items: center;
-            gap: 12px;
             padding: 12px;
-            margin-bottom: 8px;
-            background: ${card.styles.primaryColor}10;
+            margin-bottom: 10px;
+            background: ${card.styles.primaryColor}0A;
             border-radius: 8px;
             transition: all 0.3s ease;
         }
@@ -811,263 +805,275 @@ export class CardController {
         }
 
         .contact-icon, .social-icon {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            text-align: center;
+            margin-right: 15px;
             color: ${card.styles.primaryColor};
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 1.2rem;
         }
 
         .contact-label {
-            font-weight: 600;
+            font-weight: bold;
             color: ${card.styles.textColor};
-            min-width: 80px;
+            margin-right: 10px;
+            min-width: 120px;
         }
 
         .contact-value {
             color: ${card.styles.textColor};
-            flex: 1;
-        }
-
-        .primary-contact {
-            border-left: 4px solid ${card.styles.accentColor};
-        }
-
-        .social-item a {
             text-decoration: none;
-            color: inherit;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
+        }
+
+        /* NUEVA CLASE PARA ENLACES DE UBICACIÓN */
+        .contact-value.location-link {
+            color: ${card.styles.primaryColor};
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .contact-value.location-link:hover {
+            color: ${card.styles.accentColor};
+            text-decoration: underline;
+        }
+
+        .phone-link {
+            color: ${card.styles.primaryColor};
+            text-decoration: none;
+        }
+
+        .phone-link:hover {
+            color: ${card.styles.accentColor};
+        }
+
+        .email-link {
+            color: ${card.styles.primaryColor};
+            text-decoration: none;
+        }
+
+        .email-link:hover {
+            color: ${card.styles.accentColor};
         }
 
         .social-name {
-            font-weight: 600;
+            font-weight: bold;
             color: ${card.styles.textColor};
         }
 
-        .social-value {
-            color: ${card.styles.textColor};
-            opacity: 0.8;
+        .social-link {
+            color: ${card.styles.primaryColor};
+            text-decoration: none;
+            margin-left: auto;
+            padding: 8px 15px;
+            background: ${card.styles.primaryColor}15;
+            border-radius: 20px;
+            transition: all 0.3s ease;
         }
 
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+        .social-link:hover {
+            background: ${card.styles.primaryColor};
+            color: white;
         }
 
-        .schedule-day {
-            padding: 10px;
-            background: ${card.styles.backgroundColor};
-            border: 1px solid ${card.styles.primaryColor}30;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .schedule-day.closed {
-            opacity: 0.5;
+        .hours-day {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid ${card.styles.primaryColor}20;
         }
 
         .day-name {
             font-weight: bold;
-            color: ${card.styles.primaryColor};
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        .day-hours {
             color: ${card.styles.textColor};
-            font-size: 14px;
-            margin-top: 4px;
         }
 
-        .stats {
+        .day-schedule {
+            color: ${card.styles.textColor};
+        }
+
+        .closed {
+            color: #999;
+            font-style: italic;
+        }
+
+        .footer {
             text-align: center;
             padding: 20px;
-            background: ${card.styles.primaryColor}05;
-            border-top: 1px solid ${card.styles.primaryColor}20;
+            background: ${card.styles.primaryColor}10;
+            color: ${card.styles.textColor};
+            font-size: 0.9rem;
         }
 
         .view-count {
-            color: ${card.styles.textColor};
-            font-size: 14px;
-        }
-
-        .view-number {
             color: ${card.styles.primaryColor};
             font-weight: bold;
-            font-size: 18px;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .card-container {
                 margin: 10px;
-                border-radius: 15px;
             }
 
-            .card-content {
+            .card-header {
                 padding: 20px;
             }
 
-            .schedule-grid {
-                grid-template-columns: 1fr;
+            .card-title {
+                font-size: 1.8rem;
+            }
+
+            .contact-label {
+                min-width: 100px;
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="card-container">
-        <!-- Header -->
         <div class="card-header">
-            <div class="logo">
-                ${
-                    card.logoUrl
-                        ? `<img src="${card.logoUrl}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-                        : `<i class="pi pi-user"></i>`
-                }
-            </div>
+            ${card.logoUrl ? `<img src="${card.logoUrl}" alt="${card.title}" class="logo">` : ''}
             <h1 class="card-title">${card.title}</h1>
             ${card.profession ? `<p class="card-profession">${card.profession}</p>` : ''}
         </div>
 
-        <!-- Content -->
-        <div class="card-content">
-            ${
-                card.description
-                    ? `
-                <div class="description">
-                    <p>${card.description}</p>
-                </div>
-            `
-                    : ''
-            }
+        <div class="card-body">
+            ${card.description ? `<p class="description">${card.description}</p>` : ''}
 
-            <!-- Contact Info -->
             ${
                 card.contactInfo.length > 0
                     ? `
-                <div class="section">
-                    <h3 class="section-title">
-                        <i class="pi pi-phone"></i>
-                        Información de Contacto
-                    </h3>
-                    ${card.contactInfo
-                        .sort((a, b) => a.displayOrder - b.displayOrder)
-                        .map(
-                            (contact) => `
-                            <div class="contact-item ${contact.isPrimary ? 'primary-contact' : ''}">
-                                <div class="contact-icon">
-                                    <i class="pi ${this.getContactIcon(contact.contactType)}"></i>
-                                </div>
-                                ${contact.label ? `<span class="contact-label">${contact.label}:</span>` : ''}
-                                <span class="contact-value">${contact.value}</span>
-                            </div>
-                        `
-                        )
-                        .join('')}
-                </div>
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="pi pi-phone"></i> Contacto
+                </h2>
+                ${card.contactInfo
+                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                    .map((contact) => this.generateContactHTML(contact))
+                    .join('')}
+            </div>
             `
                     : ''
             }
 
-            <!-- Social Links -->
             ${
                 card.socialLinks.length > 0
                     ? `
-                <div class="section">
-                    <h3 class="section-title">
-                        <i class="pi pi-share-alt"></i>
-                        Redes Sociales
-                    </h3>
-                    ${card.socialLinks
-                        .sort((a, b) => a.displayOrder - b.displayOrder)
-                        .map(
-                            (social) => `
-                            <div class="social-item">
-                                <a href="${social.generatedUrl}" target="_blank" rel="noopener">
-                                    <div class="social-icon">
-                                        <i class="pi ${social.iconClass ?? 'pi-external-link'}"></i>
-                                    </div>
-                                    <span class="social-name">${social.socialNetworkName}</span>
-                                    <span class="social-value">${social.value}</span>
-                                </a>
-                            </div>
-                        `
-                        )
-                        .join('')}
-                </div>
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="pi pi-share-alt"></i> Redes Sociales
+                </h2>
+                ${card.socialLinks
+                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                    .map(
+                        (social) => `
+                    <div class="social-item">
+                        <i class="${social.iconClass ?? 'pi pi-globe'} social-icon"></i>
+                        <span class="social-name">${social.socialNetworkName}</span>
+                        <a href="${social.generatedUrl}" target="_blank" class="social-link">
+                            Visitar
+                        </a>
+                    </div>
+                    `
+                    )
+                    .join('')}
+            </div>
             `
                     : ''
             }
 
-            <!-- Business Hours -->
             ${
                 card.businessHours.length > 0
                     ? `
-                <div class="section">
-                    <h3 class="section-title">
-                        <i class="pi pi-clock"></i>
-                        Horarios de Atención
-                    </h3>
-                    <div class="schedule-grid">
-                        ${card.businessHours
-                            .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
-                            .map(
-                                (hour) => `
-                                <div class="schedule-day ${hour.isClosed ? 'closed' : ''}">
-                                    <div class="day-name">${hour.dayName}</div>
-                                    <div class="day-hours">${hour.formattedSchedule}</div>
-                                    ${
-                                        hour.notes
-                                            ? `<div style="font-size:11px;color:${card.styles.textColor}80;margin-top:2px;">${hour.notes}</div>`
-                                            : ''
-                                    }
-                                </div>
-                            `
-                            )
-                            .join('')}
+            <div class="section">
+                <h2 class="section-title">
+                    <i class="pi pi-clock"></i> Horarios de Atención
+                </h2>
+                ${card.businessHours
+                    .sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+                    .map(
+                        (hour) => `
+                    <div class="hours-day">
+                        <span class="day-name">${hour.dayName}</span>
+                        <span class="day-schedule ${hour.isClosed ? 'closed' : ''}">${hour.formattedSchedule}</span>
                     </div>
-                </div>
+                    `
+                    )
+                    .join('')}
+            </div>
             `
                     : ''
             }
         </div>
 
-        <!-- Stats -->
-        <div class="stats">
-            <div class="view-count">
-                <span class="view-number">${card.viewCount.toLocaleString()}</span> visualizaciones
-            </div>
+        <div class="footer">
+            <p>Vistas: <span class="view-count">${card.viewCount}</span></p>
+            <p>Creado por: ${card.ownerName} | ${card.tenantName}</p>
         </div>
     </div>
-
-    <script>
-        // Agregar efectos de interacción
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animar entrada
-            document.querySelector('.card-container').style.animation = 'slideInUp 0.6s ease-out';
-
-            // Agregar estilos de animación
-            const style = document.createElement('style');
-            style.textContent = \`
-                @keyframes slideInUp {
-                    from { opacity: 0; transform: translateY(30px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-            \`;
-            document.head.appendChild(style);
-        });
-    </script>
 </body>
 </html>`;
     }
 
-    // ===================================================
-    // MÉTODOS AUXILIARES
-    // ===================================================
+    // MÉTODO AUXILIAR PARA GENERAR HTML DE CONTACTO
+    private generateContactHTML(contact: any): string {
+        const getContactIcon = (type: string) => {
+            switch (type) {
+                case 'phone':
+                    return 'pi pi-phone';
+                case 'email':
+                    return 'pi pi-envelope';
+                case 'address':
+                    return 'pi pi-map-marker';
+                case 'website':
+                    return 'pi pi-globe';
+                default:
+                    return 'pi pi-info-circle';
+            }
+        };
+
+        const formatContactValue = (contact: any) => {
+            switch (contact.contactType) {
+                case 'phone':
+                    // Si parece un número de WhatsApp (empieza con +52), crear enlace de WhatsApp
+                    if (contact.value.startsWith('+52') || contact.label?.toLowerCase().includes('whatsapp')) {
+                        const cleanNumber = contact.value.replace(/[^\d]/g, '');
+                        return `<a href="https://wa.me/${cleanNumber}" target="_blank" class="phone-link">${contact.value}</a>`;
+                    }
+                    // Si no, crear enlace tel:
+                    return `<a href="tel:${contact.value}" class="phone-link">${contact.value}</a>`;
+
+                case 'email':
+                    return `<a href="mailto:${contact.value}" class="email-link">${contact.value}</a>`;
+
+                case 'address':
+                    // Detectar si es un enlace de Google Maps
+                    if (contact.value.includes('google.com/maps') || contact.value.includes('goo.gl')) {
+                        return `<a href="${contact.value}" target="_blank" class="contact-value location-link">📍 Ver en Google Maps</a>`;
+                    }
+                    // Si no es un enlace, mostrar como texto normal
+                    return `<span class="contact-value">${contact.value}</span>`;
+
+                case 'website':
+                    return `<a href="${contact.value}" target="_blank" class="contact-value">${contact.value}</a>`;
+
+                default:
+                    return `<span class="contact-value">${contact.value}</span>`;
+            }
+        };
+
+        return `
+        <div class="contact-item">
+            <i class="${getContactIcon(contact.contactType)} contact-icon"></i>
+            <span class="contact-label">${contact.label || contact.contactType}:</span>
+            ${formatContactValue(contact)}
+        </div>
+    `;
+    }
+
+    // MÉTODO AUXILIAR PARA BORDER RADIUS
     private getBorderRadiusValue(borderRadius: string): string {
         switch (borderRadius) {
             case 'none':
@@ -1080,21 +1086,6 @@ export class CardController {
                 return '24px';
             default:
                 return '16px';
-        }
-    }
-
-    private getContactIcon(contactType: string): string {
-        switch (contactType) {
-            case 'phone':
-                return 'pi-phone';
-            case 'email':
-                return 'pi-envelope';
-            case 'address':
-                return 'pi-map-marker';
-            case 'website':
-                return 'pi-globe';
-            default:
-                return 'pi-info-circle';
         }
     }
 
