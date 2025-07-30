@@ -1,7 +1,3 @@
-// ===================================================
-// src/controllers/public-card.controller.ts
-// ===================================================
-
 import { inject } from '@loopback/core';
 import { get, param, response, Request, RestBindings, HttpErrors } from '@loopback/rest';
 import { service } from '@loopback/core';
@@ -244,7 +240,7 @@ export class PublicCardController {
         @param.path.string('query') query: string,
         @param.query.number('limit') limit?: number
     ): Promise<Partial<CardCompleteResponse>[]> {
-        const cards = await this.cardService.searchCards(query, limit ?? 10);
+        const cards = await this.cardService.searchCards(query, limit || 10);
 
         // Filtrar solo tarjetas activas y devolver datos básicos
         return cards
