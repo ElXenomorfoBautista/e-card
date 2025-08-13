@@ -78,7 +78,7 @@ export class CardController {
                                 items: {
                                     type: 'object',
                                     properties: {
-                                        contactType: { type: 'string', enum: ['phone', 'email', 'address', 'website'] },
+                                        contactType: { type: 'string' },
                                         label: { type: 'string' },
                                         value: { type: 'string' },
                                         isPrimary: { type: 'boolean' },
@@ -122,11 +122,11 @@ export class CardController {
     }
 
     // ===================================================
-    // CONTAR TARJETAS
+    // CONTAR TARJETAS (CON FILTRO DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/count')
     @response(200, {
@@ -134,15 +134,15 @@ export class CardController {
         content: { 'application/json': { schema: CountSchema } },
     })
     async count(@param.where(Card) where?: Where<Card>): Promise<Count> {
-        return this.cardRepository.count(where);
+        return this.getFilteredCount(where);
     }
 
     // ===================================================
-    // LISTAR TARJETAS
+    // LISTAR TARJETAS (CON FILTRO DE TENANT INTELIGENTE)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards')
     @response(200, {
@@ -157,7 +157,7 @@ export class CardController {
         },
     })
     async find(@param.filter(Card) filter?: Filter<Card>): Promise<Card[]> {
-        return this.cardRepository.find(filter);
+        return this.getFilteredCards(filter);
     }
 
     // ===================================================
@@ -184,11 +184,34 @@ export class CardController {
     }
 
     // ===================================================
-    // ACTUALIZAR MÚLTIPLES TARJETAS
+    // OBTENER TARJETAS DEL TENANT ACTUAL
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateAnyCard],
+        permissions: [PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
+    })
+    @get('/cards/tenant-cards')
+    @response(200, {
+        description: 'Array of tenant Card model instances',
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'array',
+                    items: getModelSchemaRef(Card, { includeRelations: true }),
+                },
+            },
+        },
+    })
+    async findTenantCards(@param.filter(Card) filter?: Filter<Card>): Promise<Card[]> {
+        return this.cardRepository.findByCurrentTenant(filter);
+    }
+
+    // ===================================================
+    // ACTUALIZAR MÚLTIPLES TARJETAS (CON FILTRO DE TENANT)
+    // ===================================================
+    @authenticate(STRATEGY.BEARER)
+    @authorize({
+        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateTenantCard, PermissionKey.UpdateAnyCard],
     })
     @patch('/cards')
     @response(200, {
@@ -206,15 +229,17 @@ export class CardController {
         card: Partial<Card>,
         @param.where(Card) where?: Where<Card>
     ): Promise<Count> {
-        return this.cardRepository.updateAll(card, where);
+        // Aplicar filtrado de tenant a la actualización
+        const filteredWhere = await this.applyTenantFilter(where);
+        return this.cardRepository.updateAll(card, filteredWhere);
     }
 
     // ===================================================
-    // OBTENER TARJETA POR ID
+    // OBTENER TARJETA POR ID (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/{id}')
     @response(200, {
@@ -229,15 +254,16 @@ export class CardController {
         @param.path.number('id') id: number,
         @param.filter(Card, { exclude: 'where' }) filter?: FilterExcludingWhere<Card>
     ): Promise<Card> {
+        await this.validateCardAccess(id);
         return this.cardRepository.findById(id, filter);
     }
 
     // ===================================================
-    // ACTUALIZAR TARJETA POR ID
+    // ACTUALIZAR TARJETA POR ID (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateAnyCard],
+        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateTenantCard, PermissionKey.UpdateAnyCard],
     })
     @patch('/cards/{id}')
     @response(204, {
@@ -254,45 +280,48 @@ export class CardController {
         })
         card: Partial<Card>
     ): Promise<void> {
+        await this.validateCardUpdateAccess(id);
         await this.cardRepository.updateById(id, card);
     }
 
     // ===================================================
-    // REEMPLAZAR TARJETA POR ID
+    // REEMPLAZAR TARJETA POR ID (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateAnyCard],
+        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateTenantCard, PermissionKey.UpdateAnyCard],
     })
     @put('/cards/{id}')
     @response(204, {
         description: 'Card PUT success',
     })
     async replaceById(@param.path.number('id') id: number, @requestBody() card: Card): Promise<void> {
+        await this.validateCardUpdateAccess(id);
         await this.cardRepository.replaceById(id, card);
     }
 
     // ===================================================
-    // ELIMINAR TARJETA POR ID
+    // ELIMINAR TARJETA POR ID (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.DeleteOwnCard, PermissionKey.DeleteAnyCard],
+        permissions: [PermissionKey.DeleteOwnCard, PermissionKey.DeleteTenantCard, PermissionKey.DeleteAnyCard],
     })
     @del('/cards/{id}')
     @response(204, {
         description: 'Card DELETE success',
     })
     async deleteById(@param.path.number('id') id: number): Promise<void> {
+        await this.validateCardDeleteAccess(id);
         await this.cardRepository.deleteById(id);
     }
 
     // ===================================================
-    // DUPLICAR TARJETA
+    // DUPLICAR TARJETA (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.CreateCard],
+        permissions: [PermissionKey.DuplicateCard],
     })
     @post('/cards/{id}/duplicate')
     @response(200, {
@@ -328,6 +357,9 @@ export class CardController {
         })
         duplicateData: Omit<DuplicateCardRequest, 'fromCardId'>
     ): Promise<Card> {
+        // Validar que puede acceder a la tarjeta fuente
+        await this.validateCardAccess(fromCardId);
+
         return this.cardService.duplicateCard({
             ...duplicateData,
             fromCardId,
@@ -335,7 +367,7 @@ export class CardController {
     }
 
     // ===================================================
-    // OBTENER ESTADÍSTICAS DE TARJETA
+    // OBTENER ESTADÍSTICAS DE TARJETA (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
@@ -362,15 +394,16 @@ export class CardController {
         },
     })
     async getCardStats(@param.path.number('id') id: number): Promise<CardStatsResponse> {
+        await this.validateCardAccess(id);
         return this.cardService.getCardStats(id);
     }
 
     // ===================================================
-    // GENERAR QR CODE
+    // GENERAR QR CODE (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateAnyCard],
+        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateTenantCard, PermissionKey.UpdateAnyCard],
     })
     @post('/cards/{id}/generate-qr')
     @response(200, {
@@ -387,16 +420,17 @@ export class CardController {
         },
     })
     async generateQR(@param.path.number('id') id: number): Promise<{ qrCodeUrl: string }> {
+        await this.validateCardUpdateAccess(id);
         const qrCodeUrl = await this.cardService.generateCardQR(id);
         return { qrCodeUrl };
     }
 
     // ===================================================
-    // ACTUALIZAR SLUG DE TARJETA
+    // ACTUALIZAR SLUG DE TARJETA (CON VALIDACIÓN DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateAnyCard],
+        permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateTenantCard, PermissionKey.UpdateAnyCard],
     })
     @patch('/cards/{id}/slug')
     @response(200, {
@@ -429,6 +463,7 @@ export class CardController {
         })
         data: { newTitle: string }
     ): Promise<{ slug: string }> {
+        await this.validateCardUpdateAccess(id);
         const slug = await this.cardService.updateCardSlug(id, data.newTitle);
         return { slug };
     }
@@ -438,7 +473,7 @@ export class CardController {
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/check-slug/{slug}')
     @response(200, {
@@ -463,11 +498,11 @@ export class CardController {
     }
 
     // ===================================================
-    // BÚSQUEDA DE TARJETAS
+    // BÚSQUEDA DE TARJETAS (CON FILTRO DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/search/{query}')
     @response(200, {
@@ -485,15 +520,15 @@ export class CardController {
         @param.path.string('query') query: string,
         @param.query.number('limit') limit?: number
     ): Promise<Card[]> {
-        return this.cardService.searchCards(query, limit);
+        return this.getFilteredSearchResults(query, limit);
     }
 
     // ===================================================
-    // TARJETAS POPULARES
+    // TARJETAS POPULARES (CON FILTRO DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/popular')
     @response(200, {
@@ -508,15 +543,15 @@ export class CardController {
         },
     })
     async getPopularCards(@param.query.number('limit') limit?: number): Promise<Card[]> {
-        return this.cardService.getPopularCards(limit);
+        return this.getFilteredPopularCards(limit);
     }
 
     // ===================================================
-    // TARJETAS RECIENTES
+    // TARJETAS RECIENTES (CON FILTRO DE TENANT)
     // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/recent')
     @response(200, {
@@ -531,12 +566,15 @@ export class CardController {
         },
     })
     async getRecentCards(@param.query.number('limit') limit?: number): Promise<Card[]> {
-        return this.cardService.getRecentCards(limit);
+        return this.getFilteredRecentCards(limit);
     }
 
+    // ===================================================
+    // OBTENER TARJETA COMPLETA PARA RENDERIZADO (CON VALIDACIÓN DE TENANT)
+    // ===================================================
     @authenticate(STRATEGY.BEARER)
     @authorize({
-        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewAnyCard],
+        permissions: [PermissionKey.ViewOwnCard, PermissionKey.ViewTenantCard, PermissionKey.ViewAnyCard],
     })
     @get('/cards/{id}/complete')
     @response(200, {
@@ -546,7 +584,6 @@ export class CardController {
                 schema: {
                     type: 'object',
                     properties: {
-                        // Datos principales
                         id: { type: 'number' },
                         slug: { type: 'string' },
                         title: { type: 'string' },
@@ -556,12 +593,8 @@ export class CardController {
                         qrCodeUrl: { type: 'string' },
                         isActive: { type: 'boolean' },
                         viewCount: { type: 'number' },
-
-                        // Información del dueño
                         ownerName: { type: 'string' },
                         tenantName: { type: 'string' },
-
-                        // Estilos completos
                         styles: {
                             type: 'object',
                             properties: {
@@ -576,8 +609,6 @@ export class CardController {
                                 borderRadius: { type: 'string' },
                             },
                         },
-
-                        // Información de contacto
                         contactInfo: {
                             type: 'array',
                             items: {
@@ -591,8 +622,6 @@ export class CardController {
                                 },
                             },
                         },
-
-                        // Redes sociales con URLs generadas
                         socialLinks: {
                             type: 'array',
                             items: {
@@ -607,8 +636,6 @@ export class CardController {
                                 },
                             },
                         },
-
-                        // Horarios formateados
                         businessHours: {
                             type: 'array',
                             items: {
@@ -624,8 +651,6 @@ export class CardController {
                                 },
                             },
                         },
-
-                        // Metadatos
                         createdOn: { type: 'string' },
                         modifiedOn: { type: 'string' },
                     },
@@ -634,14 +659,15 @@ export class CardController {
         },
     })
     async getCompleteCardDetails(@param.path.number('id') id: number): Promise<CardCompleteResponse> {
-        // Primero obtener la tarjeta para verificar permisos y obtener el slug
         const card = await this.cardRepository.findById(id);
 
         if (!card) {
             throw new HttpErrors.NotFound('Card not found');
         }
 
-        // Usar el servicio para obtener todos los detalles
+        // Validar acceso al tenant
+        await this.validateCardAccess(id);
+
         const completeCard = await this.cardService.getCompleteCard(card.slug);
 
         if (!completeCard) {
@@ -649,6 +675,153 @@ export class CardController {
         }
 
         return completeCard;
+    }
+
+    // ===================================================
+    // MÉTODOS PRIVADOS DE SEGURIDAD Y FILTRADO
+    // ===================================================
+
+    private async getCurrentUser(): Promise<any> {
+        return this.cardRepository['getCurrentUser']();
+    }
+
+    private async isSuperAdmin(): Promise<boolean> {
+        const currentUser = await this.getCurrentUser();
+        return currentUser?.tenant?.id === 1;
+    }
+
+    private async hasPermission(permission: string): Promise<boolean> {
+        const currentUser = await this.getCurrentUser();
+        return currentUser?.permissions?.includes(permission) ?? false;
+    }
+
+    private async validateCardAccess(cardId: number): Promise<void> {
+        if (await this.isSuperAdmin()) return; // Super admin puede ver todo
+
+        const currentUser = await this.getCurrentUser();
+        const card = await this.cardRepository.findById(cardId);
+
+        const hasViewAny = await this.hasPermission(PermissionKey.ViewAnyCard);
+        const hasViewTenant = await this.hasPermission(PermissionKey.ViewTenantCard);
+        const hasViewOwn = await this.hasPermission(PermissionKey.ViewOwnCard);
+
+        if (hasViewAny) return; // Puede ver cualquier tarjeta
+
+        if (hasViewTenant && card.tenantId === currentUser.tenant.id) return; // Mismo tenant
+
+        if (hasViewOwn && card.userId === currentUser.id) return; // Es el dueño
+
+        throw new HttpErrors.Forbidden('You do not have permission to access this card');
+    }
+
+    private async validateCardUpdateAccess(cardId: number): Promise<void> {
+        if (await this.isSuperAdmin()) return;
+
+        const currentUser = await this.getCurrentUser();
+        const card = await this.cardRepository.findById(cardId);
+
+        const hasUpdateAny = await this.hasPermission(PermissionKey.UpdateAnyCard);
+        const hasUpdateTenant = await this.hasPermission(PermissionKey.UpdateTenantCard);
+        const hasUpdateOwn = await this.hasPermission(PermissionKey.UpdateOwnCard);
+
+        if (hasUpdateAny) return;
+
+        if (hasUpdateTenant && card.tenantId === currentUser.tenant.id) return;
+
+        if (hasUpdateOwn && card.userId === currentUser.id) return;
+
+        throw new HttpErrors.Forbidden('You do not have permission to update this card');
+    }
+
+    private async validateCardDeleteAccess(cardId: number): Promise<void> {
+        if (await this.isSuperAdmin()) return;
+
+        const currentUser = await this.getCurrentUser();
+        const card = await this.cardRepository.findById(cardId);
+
+        const hasDeleteAny = await this.hasPermission(PermissionKey.DeleteAnyCard);
+        const hasDeleteTenant = await this.hasPermission(PermissionKey.DeleteTenantCard);
+        const hasDeleteOwn = await this.hasPermission(PermissionKey.DeleteOwnCard);
+
+        if (hasDeleteAny) return;
+
+        if (hasDeleteTenant && card.tenantId === currentUser.tenant.id) return;
+
+        if (hasDeleteOwn && card.userId === currentUser.id) return;
+
+        throw new HttpErrors.Forbidden('You do not have permission to delete this card');
+    }
+
+    private async applyTenantFilter(where?: Where<Card>): Promise<Where<Card>> {
+        if (await this.isSuperAdmin()) return where ?? {}; // Super admin sin filtro
+
+        const currentUser = await this.getCurrentUser();
+        const hasViewAny = await this.hasPermission(PermissionKey.ViewAnyCard);
+
+        if (hasViewAny) return where ?? {}; // Puede ver cualquier tarjeta
+
+        const tenantFilter = { tenantId: currentUser.tenant.id };
+
+        return where ? { and: [where, tenantFilter] } : tenantFilter;
+    }
+
+    private async getFilteredCards(filter?: Filter<Card>): Promise<Card[]> {
+        const filteredWhere = await this.applyTenantFilter(filter?.where);
+
+        return this.cardRepository.find({
+            ...filter,
+            where: filteredWhere,
+        });
+    }
+
+    private async getFilteredCount(where?: Where<Card>): Promise<Count> {
+        const filteredWhere = await this.applyTenantFilter(where);
+        return this.cardRepository.count(filteredWhere);
+    }
+
+    private async getFilteredSearchResults(query: string, limit?: number): Promise<Card[]> {
+        if (await this.isSuperAdmin()) {
+            return this.cardService.searchCards(query, limit);
+        }
+
+        // Aplicar filtro de tenant a la búsqueda
+        const currentUser = await this.getCurrentUser();
+        const searchTerm = `%${query.toLowerCase()}%`;
+
+        const tenantFilter = { tenantId: currentUser.tenant.id };
+        const searchFilter = {
+            or: [
+                { title: { ilike: searchTerm } },
+                { profession: { ilike: searchTerm } },
+                { description: { ilike: searchTerm } },
+            ],
+        };
+
+        return this.cardRepository.find({
+            where: { and: [tenantFilter, searchFilter] },
+            order: ['viewCount DESC', 'title ASC'],
+            limit: limit ?? 10,
+        });
+    }
+
+    private async getFilteredPopularCards(limit?: number): Promise<Card[]> {
+        const filter = await this.applyTenantFilter();
+
+        return this.cardRepository.find({
+            where: filter,
+            order: ['viewCount DESC', 'createdOn DESC'],
+            limit: limit ?? 10,
+        });
+    }
+
+    private async getFilteredRecentCards(limit?: number): Promise<Card[]> {
+        const filter = await this.applyTenantFilter();
+
+        return this.cardRepository.find({
+            where: filter,
+            order: ['createdOn DESC'],
+            limit: limit ?? 10,
+        });
     }
     @authorize({ permissions: ['*'] })
     @get('/cards/{id}/preview')
