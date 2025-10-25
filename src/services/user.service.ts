@@ -7,8 +7,7 @@ import { QRCodeGenerator } from './qr-generator.service';
 import { HttpErrors, Request, Response } from '@loopback/rest';
 import { UserWithRelations } from '../models';
 import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 import * as fs from 'fs';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FileUploadOptions, FileUploadService } from './file-upload.service';
@@ -25,7 +24,7 @@ export class UserService {
         private emailService: EmailService,
         @service(QRCodeGenerator)
         private qrCodeGenerator: QRCodeGenerator
-    ) { }
+    ) {}
 
     public async saveImageUser(userId: number, request: Request, responseEndpoint: Response): Promise<void> {
         try {
@@ -178,7 +177,7 @@ export class UserService {
                                             width: 150,
                                             alignment: 'center',
                                             margin: [0, 5],
-                                        }
+                                        },
                                     ],
                                     border: [false, false, false, false],
                                 },
@@ -194,7 +193,10 @@ export class UserService {
                                 {
                                     stack: [
                                         { text: ``, style: 'userInfo' },
-                                        { text: `${user?.firstName} ${user?.middleName}${user?.lastName}`, style: 'userInfo' },
+                                        {
+                                            text: `${user?.firstName} ${user?.middleName}${user?.lastName}`,
+                                            style: 'userInfo',
+                                        },
                                         { text: `${user?.username}`, style: 'userInfo' },
                                         { text: `${user?.email}`, style: 'userInfo' },
                                     ],
@@ -244,9 +246,8 @@ export class UserService {
                     margin: [0, 10],
                 },
             },
-        }
+        };
         return documentDefinition;
-
     }
 
     returnQRPath(qrPath: string): string {
@@ -254,7 +255,7 @@ export class UserService {
         const qrDirectoryPath = path.join(appDir, 'uploads', qrPath);
 
         if (fs.existsSync(qrDirectoryPath)) {
-            return `data:image/png;base64,${fs.readFileSync(qrDirectoryPath, 'base64')}`
+            return `data:image/png;base64,${fs.readFileSync(qrDirectoryPath, 'base64')}`;
         } else {
             return '';
         }

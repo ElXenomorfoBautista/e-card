@@ -1,63 +1,51 @@
 services:
-  postgres:
-    image: postgres:alpine
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
-    volumes:
-      - dbdata:/var/lib/postgresql/data
-    networks:
-      - lp4net
-    ports:
-      - 5432:5432
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    postgres:
+        image: postgres:alpine
+        environment:
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: ${DB_DATABASE}
+        volumes:
+            - dbdata:/var/lib/postgresql/data
+        networks:
+            - lp4net
+        ports:
+            - 5432:5432
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-U', 'postgres']
+            interval: 5s
+            timeout: 5s
+            retries: 5
 
-  redis:
-    image: redis
-    networks:
-      - lp4net
+    redis:
+        image: redis
+        networks:
+            - lp4net
 
-  backend:
-    build: .
-    container_name: backend
-    networks:
-      - lp4net
-    volumes:
-      - .:/backend
-    ports:
-      - 3000:3000
-    environment:
-      - DB_HOST=postgres
-      - DB_USER=${DB_USER}
-      - REDIS_HOST=redis
-      - DB_PASSWORD=${DB_PASSWORD}
+    backend:
+        build: .
+        container_name: backend
+        networks:
+            - lp4net
+        volumes:
+            - .:/backend
+            - /backend/node_modules # Esto previene que node_modules del host sobrescriba el del contenedor
+        ports:
+            - 3000:3000
+        environment:
+            - DB_HOST=postgres
+            - DB_USER=${DB_USER}
+            - REDIS_HOST=redis
+            - DB_PASSWORD=${DB_PASSWORD}
 
-    command: sh -c "npm install --force && npm run db:migrate && npm run start"
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  frontend:
-    build: ${FRONTEND_DIR}
-    container_name: frontend
-    networks:
-      - lp4net
-    depends_on:
-      - backend
-    ports:
-      - 4200:4200
-    volumes:
-      - ${FRONTEND_DIR}:/frontend:cached
-    command: sh -c "npm install && sh swagger-codegen.sh && npm run start"
+        command: sh -c "npm run db:migrate && npm run start"
+        depends_on:
+            postgres:
+                condition: service_healthy
 
 volumes:
-  dbdata:
+    dbdata:
 
 networks:
-  lp4net:
-    driver: bridge
+    lp4net:
+        driver: bridge

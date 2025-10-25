@@ -25,7 +25,7 @@ export interface CardCompleteResponse {
     qrCodeUrl?: string;
     isActive: boolean;
     viewCount: number;
-    previewUrl?: string;
+    publicUrl?: string;
     // Información del dueño
     ownerName: string;
     tenantName: string;

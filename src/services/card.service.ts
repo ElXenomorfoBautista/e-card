@@ -182,8 +182,8 @@ export class CardService {
             qrCodeUrl: card.qrCodeUrl,
             isActive: card.isActive,
             viewCount: card.viewCount,
-            previewUrl: `${process.env.BACKEND_URL}/cards/${card.id}/preview`,
-            // Información del dueño (CORREGIDO)
+            publicUrl: `${process.env.FRONTEND_URL}/ecard/${card.slug}`,
+            // Información del dueño
             ownerName: `${card.user?.firstName ?? ''} ${card.user?.lastName ?? ''}`.trim(),
             tenantName: card.tenant?.name ?? '',
 
