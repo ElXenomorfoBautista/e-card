@@ -401,7 +401,7 @@ export class CardController {
     // ===================================================
     // GENERAR QR CODE (CON VALIDACIÓN DE TENANT)
     // ===================================================
-    @authenticate(STRATEGY.BEARER)
+    /*     @authenticate(STRATEGY.BEARER)
     @authorize({
         permissions: [PermissionKey.UpdateOwnCard, PermissionKey.UpdateTenantCard, PermissionKey.UpdateAnyCard],
     })
@@ -423,7 +423,7 @@ export class CardController {
         await this.validateCardUpdateAccess(id);
         const qrCodeUrl = await this.cardService.generateCardQR(id);
         return { qrCodeUrl };
-    }
+    } */
 
     // ===================================================
     // ACTUALIZAR SLUG DE TARJETA (CON VALIDACIÓN DE TENANT)

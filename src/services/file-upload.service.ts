@@ -1,167 +1,150 @@
-import { injectable, BindingScope } from '@loopback/core';
-import { HttpErrors, Request, Response } from '@loopback/rest';
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { injectable, BindingScope, inject } from '@loopback/core';
 import multer from 'multer';
 import path from 'path';
-import { fileDirectories } from '../utils/file-directories';
-import * as fs from 'fs';
-import { repository } from '@loopback/repository';
-import { UserRepository } from '../repositories';
+import fs from 'fs';
+import { Request, Response } from 'express';
+import { HttpErrors } from '@loopback/rest';
+import { AuthenticationBindings } from 'loopback4-authentication';
+import { AuthUser } from '../modules/auth';
+import { FileResponse, generateFileResponse } from '../utils/custom-json-file';
+import { JsonResponse, generateResponse } from '../utils/custom-json-response';
 
-export interface FileUploadOptions {
-    storePath: string;
-    fieldname: string;
-    request: Request;
-    responseEndpoint: Response;
-    acceptedExt: string[];
-}
+// Define la carpeta base de uploads
+const BASE_UPLOAD_DIR = path.resolve(__dirname, '../../uploads');
 
 @injectable({ scope: BindingScope.TRANSIENT })
 export class FileUploadService {
     constructor(
-        @repository(UserRepository) private userRepository: UserRepository
-    ) { }
-
-    /**
-     * Return a config for multer storage
-     * @param path
-     */
-    public getMulterStorageConfig(pathDestination: string) {
-        let filename = '';
-        this.ensureDirectoryExists(pathDestination);
-        const storage = multer.diskStorage({
-            destination: function (req, file, cb) {
-                cb(null, pathDestination);
-            },
-            filename: function (req, file, cb) {
-                const randomNumber = Math.floor(Math.random() * 99);
-                const fileExtension = path.extname(file.originalname);
-
-                // Utiliza un operador ternario para determinar el prefijo
-                const prefix = ['.jpg', '.jpeg', '.png'].includes(fileExtension.toLowerCase()) ? 'img' : 'file';
-
-                // Formato: img_numero-random_Date.Now()
-                filename = `${prefix}-${randomNumber}-${Date.now()}${fileExtension}`;
-
-                cb(null, filename);
-            },
-        });
-        return storage;
+        @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
+        private currentUser: AuthUser
+    ) {
+        // Asegurarse que existe el directorio base
+        fs.mkdirSync(BASE_UPLOAD_DIR, { recursive: true });
     }
 
-    /**
-     * store the file in a specific path
-     * @param storePath
-     * @param request
-     * @param response
-     */
-    private performFileUpload(
-        options: FileUploadOptions,
-        single: boolean,
-        enableFormatFilter: boolean
-    ): Promise<object> {
-        return new Promise<object>((resolve, reject) => {
-            const storage = this.getMulterStorageConfig(options.storePath);
-
-            const upload = multer({
-                storage: storage,
-                fileFilter: enableFormatFilter
-                    ? function (req, file, callback) {
-                        const ext = path.extname(file.originalname).toUpperCase();
-                        if (options.acceptedExt.includes(ext)) {
-                            return callback(null, true);
-                        }
-                        return callback(new HttpErrors[400]('This format file is not supported.'));
-                    }
-                    : undefined,
-            });
-
-            const middleware = single
-                ? upload.single(options.fieldname)
-                : upload.fields([{ name: options.fieldname, maxCount: 15 }]);
-
-            middleware(options.request, options.responseEndpoint, (err: string) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(options.responseEndpoint);
-            });
-        });
-    }
-
-    public storeFileToPath(options: FileUploadOptions, single = true, enableFormatFilter = true): Promise<object> {
-        return this.performFileUpload(options, single, enableFormatFilter);
-    }
-
-    public storeMultipleFilesToPath(
-        options: FileUploadOptions,
-        single = false,
-        enableFormatFilter = true
-    ): Promise<object> {
-        return this.performFileUpload(options, single, enableFormatFilter);
-    }
-
-    public async existsFileDirectoryInConfig(
-        subDirectory: string
-    ): Promise<{ success: boolean; message: string; path: string; directory: string }> {
-        const selectedDirectory = fileDirectories.find((directory) => directory.subDirectory === subDirectory);
-
-        if (selectedDirectory) {
-            return {
-                success: true,
-                message: 'Directory found!',
-                path: selectedDirectory.path,
-                directory: selectedDirectory.subDirectory,
-            };
-        }
-        {
-            return {
-                success: false,
-                message: `The directory '${subDirectory}' is not declared`,
-                path: '',
-                directory: '',
-            };
-        }
-    }
-
-    public ensureDirectoryExists(directoryPath: string): { success: boolean; message: string } {
-        if (!fs.existsSync(directoryPath)) {
-            // Create the directory if it doesn't exist
-            fs.mkdirSync(directoryPath, { recursive: true });
-        }
-        // Return a success response with the directory path
-        return { success: true, message: 'Directory found' };
-    }
-
-    public async deleteImagePath(imagePath: string, subDirectory: string, id: number): Promise<void> {
+    async fileUpload(
+        request: Request,
+        response: Response,
+        customPath?: string
+    ): Promise<JsonResponse<FileResponse | null>> {
         try {
-            const appDir = process.cwd();
+            let finalCustomPath = customPath;
 
-            const selectSubdirectory = await this.existsFileDirectoryInConfig(subDirectory);
+            return await new Promise<JsonResponse<FileResponse | null>>((resolve, reject) => {
+                // Usar memoria temporal para procesar todo en un solo paso
+                const upload = multer({ storage: multer.memoryStorage() });
 
-            if (!selectSubdirectory.success) {
-                throw new HttpErrors.UnprocessableEntity(selectSubdirectory.message);
-            }
+                upload.fields([
+                    { name: 'files', maxCount: 10 },
+                    { name: 'customPath', maxCount: 1 },
+                ])(request, response, async (err: any) => {
+                    if (err) {
+                        reject(generateResponse(500, false, err.message, err));
+                        return;
+                    }
 
-            const destinationPath = path.join(appDir, 'uploads', imagePath);
+                    // Extraer customPath del body
+                    if (!finalCustomPath && request.body?.customPath) {
+                        finalCustomPath = request.body.customPath;
+                    }
 
-            await fs.promises.unlink(destinationPath);
+                    // Extraer archivos
+                    const files = (request.files as any)?.files || [];
 
-            if (!id || id !== 0) {
-                const getRepo = await this.getRepositoryByDirectory(subDirectory);
-                await getRepo?.updateById(id, { imagePath: undefined });
-            }
+                    if (!files?.length) {
+                        reject(
+                            generateResponse(
+                                404,
+                                false,
+                                'No se encontraron archivos para subir',
+                                'Sin archivos para subir'
+                            )
+                        );
+                        return;
+                    }
+
+                    // Determinar el directorio de destino
+                    let destinationPath = BASE_UPLOAD_DIR;
+                    if (finalCustomPath) {
+                        const cleanPath = finalCustomPath
+                            .trim()
+                            .replace(/^[/\\]+/, '')
+                            .replace(/[/\\]+$/, '');
+
+                        // Validar permisos
+                        try {
+                            destinationPath = path.join(BASE_UPLOAD_DIR, cleanPath);
+                        } catch (validationError) {
+                            reject(
+                                generateResponse(
+                                    validationError.statusCode || 400,
+                                    false,
+                                    validationError.message,
+                                    null,
+                                    validationError.details
+                                )
+                            );
+                            return;
+                        }
+                    }
+
+                    // Crear directorio
+                    try {
+                        fs.mkdirSync(destinationPath, { recursive: true });
+                    } catch (dirError) {
+                        reject(generateResponse(500, false, 'Error al crear el directorio', dirError));
+                        return;
+                    }
+
+                    try {
+                        const filesMapped = await Promise.all(
+                            files.map(async (file: Express.Multer.File) => {
+                                // Generar nombre de archivo único
+                                const cleanFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+                                const fileName = `${Date.now()}-${cleanFileName}`;
+                                const filePath = path.join(destinationPath, fileName);
+
+                                try {
+                                    fs.writeFileSync(filePath, file.buffer);
+                                } catch (writeError) {
+                                    throw new Error(`Error al guardar archivo: ${writeError.message}`);
+                                }
+
+                                const fileData = {
+                                    originalName: file.originalname,
+                                    fileName: fileName,
+                                    url: `${process.env.BACKEND_URL}/uploads/${
+                                        finalCustomPath ? `${finalCustomPath}/` : ''
+                                    }${fileName}`,
+                                    path: filePath,
+                                };
+
+                                return {
+                                    ...fileData,
+                                };
+                            })
+                        );
+
+                        const fileObject = generateFileResponse(filesMapped);
+                        resolve(generateResponse(202, true, 'Archivo(s) subido(s) correctamente', fileObject));
+                    } catch (error) {
+                        reject(generateResponse(500, false, 'Error al procesar los archivos', error));
+                    }
+                });
+            });
         } catch (error) {
-            throw new HttpErrors.UnprocessableEntity(error.message);
-        }
-    }
-
-    private async getRepositoryByDirectory(
-        subDirectory: string
-    ): Promise<UserRepository | undefined> {
-        switch (subDirectory) {
-            case 'user':
-                return this.userRepository;
-            default:
+            if (error instanceof HttpErrors.HttpError) {
+                return generateResponse(error.statusCode, false, error.message, null, error.details || error.message);
+            }
+            return generateResponse(
+                500,
+                false,
+                error.message || 'Error interno del servidor',
+                null,
+                error.details || error.message
+            );
         }
     }
 }

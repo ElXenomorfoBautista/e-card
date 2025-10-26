@@ -3,82 +3,21 @@ import { UserRepository } from '../repositories';
 import { repository } from '@loopback/repository';
 import { EmailService } from './email.service';
 import path from 'path';
-import { QRCodeGenerator } from './qr-generator.service';
-import { HttpErrors, Request, Response } from '@loopback/rest';
+import { HttpErrors } from '@loopback/rest';
 import { UserWithRelations } from '../models';
 import pdfMake from 'pdfmake/build/pdfmake';
 
 import * as fs from 'fs';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import { FileUploadOptions, FileUploadService } from './file-upload.service';
-import { fileDirectories } from '../utils/file-directories';
 
 @injectable({ scope: BindingScope.TRANSIENT })
 export class UserService {
     constructor(
         @repository(UserRepository)
         public userRepository: UserRepository,
-        @service(FileUploadService)
-        private fileUpload: FileUploadService,
         @service(EmailService)
-        private emailService: EmailService,
-        @service(QRCodeGenerator)
-        private qrCodeGenerator: QRCodeGenerator
+        private emailService: EmailService
     ) {}
-
-    public async saveImageUser(userId: number, request: Request, responseEndpoint: Response): Promise<void> {
-        try {
-            const appDir = process.cwd();
-            const subDirectory = 'user';
-            const selectDirectory = await this.fileUpload.existsFileDirectoryInConfig(subDirectory);
-
-            if (!selectDirectory.success) {
-                throw new HttpErrors.UnprocessableEntity(selectDirectory.message);
-            }
-
-            const newDestinationPath = path.join(appDir, 'uploads', selectDirectory.path, `${userId}`);
-
-            const optionFile: FileUploadOptions = {
-                storePath: newDestinationPath,
-                fieldname: 'file',
-                request,
-                responseEndpoint,
-                acceptedExt: ['.PNG', '.JPG', '.JPEG'],
-            };
-
-            // Llama la función del service para guardar el archivo
-            const responseProfile = await this.fileUpload.storeFileToPath(optionFile);
-            if (responseProfile) {
-                const filePath = `${selectDirectory.path}/${userId}/` + responseEndpoint.req.file?.filename;
-
-                await this.userRepository.updateById(userId, { imagePath: filePath });
-            }
-        } catch (error) {
-            throw new HttpErrors.UnprocessableEntity(error.message);
-        }
-    }
-
-    public async generateUserQR(id: number): Promise<{ success: boolean; message: string; qrPath: string }> {
-        try {
-            const user = await this.userRepository.findById(id);
-            const data = JSON.stringify({ id: user.id, type: 'user' });
-            const newQr = await this.qrCodeGenerator.generateQRCode(
-                data,
-                'userQR',
-                `${user.id}-${user.firstName.replace(/ /g, '-')}`
-            );
-            if (newQr.success) {
-                user.qrPath = newQr.data;
-                await this.userRepository.updateById(user.id, user);
-
-                return { success: true, message: 'QR generated successfully.', qrPath: newQr.data };
-            } else {
-                return { success: false, message: 'QR generated unsuccessfully. ' + newQr.message, qrPath: newQr.data };
-            }
-        } catch (error) {
-            throw new HttpErrors.UnprocessableEntity(error.message);
-        }
-    }
 
     public async sendEmail(id: number): Promise<{ success: boolean; message: string; data: string }> {
         try {

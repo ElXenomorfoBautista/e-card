@@ -41,6 +41,7 @@ export interface CardCompleteResponse {
         fontSize: string;
         layoutTemplate: string;
         borderRadius: string;
+        backgroundImageUrl?: string;
     };
 
     // Información de contacto
@@ -95,6 +96,7 @@ export interface CreateCardRequest {
         fontSize?: FontSize;
         layoutTemplate?: LayoutTemplate;
         borderRadius?: BorderRadius;
+        backgroundImageUrl?: string;
     };
 
     // Información de contacto

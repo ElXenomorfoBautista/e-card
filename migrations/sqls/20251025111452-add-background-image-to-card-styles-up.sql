@@ -1,0 +1,1 @@
+-- Agregar columna background_image_url a la tabla card_styles

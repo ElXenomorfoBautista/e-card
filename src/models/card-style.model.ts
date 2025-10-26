@@ -85,7 +85,12 @@ export class CardStyle extends UserModifiableEntity {
         default: 'medium',
     })
     borderRadius: string;
-
+    @property({
+        type: 'string',
+        name: 'background_image_url',
+        required: false,
+    })
+    backgroundImageUrl?: string;
     constructor(data?: Partial<CardStyle>) {
         super(data);
     }

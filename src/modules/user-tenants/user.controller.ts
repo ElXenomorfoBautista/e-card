@@ -34,7 +34,7 @@ export class UserController {
         private tenant?: Tenant,
         @inject('services.RoleService')
         public roleService?: RoleService
-    ) { }
+    ) {}
 
     @authenticate(STRATEGY.BEARER)
     @authorize({
@@ -189,40 +189,10 @@ export class UserController {
         responses: {
             '200': {
                 description: 'Email the users card.',
-            }
-        }
+            },
+        },
     })
     async sendEmail(@param.path.number('id') id: number): Promise<any> {
-        return await this.userService.sendEmail(id);
-    }
-
-    @authenticate(STRATEGY.BEARER)
-    @authorize({
-        permissions: [PermissionKey.CreateAnyUser, PermissionKey.CreateTenantUser],
-    })
-    @post('/users/generate-qr-path/{id}', {
-        responses: {
-            '200': {
-                description: 'Creates the users QR.',
-            }
-        }
-    })
-    async generateUserQR(@param.path.number('id') id: number): Promise<any> {
-        return await this.userService.generateUserQR(id);
-    }
-
-    @authenticate(STRATEGY.BEARER)
-    @authorize({
-        permissions: [PermissionKey.CreateAnyUser, PermissionKey.CreateTenantUser],
-    })
-    @post('/users/generate-id-pdf/{id}', {
-        responses: {
-            '200': {
-                description: 'Creates the users a PDF.',
-            }
-        }
-    })
-    async generateUserPDF(@param.path.number('id') id: number): Promise<any> {
-        return await this.userService.generateCard(id);
+        return this.userService.sendEmail(id);
     }
 }

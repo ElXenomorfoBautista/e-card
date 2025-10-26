@@ -1,102 +1,60 @@
-import { Request, Response, RestBindings, del, get, param, post, requestBody, response } from '@loopback/rest';
-import { inject, service } from '@loopback/core';
-import { STRATEGY, authenticate } from 'loopback4-authentication';
-import { PermissionKey } from '../modules/auth/permission-key.enum';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { post, Request, requestBody, Response, RestBindings } from '@loopback/rest';
+import { inject } from '@loopback/core';
 import { authorize } from 'loopback4-authorization';
-import { UserRepository } from '@loopback/authentication-jwt';
-import { repository } from '@loopback/repository';
-import path from 'path';
-import fs from 'fs';
-import { UserService, FileUploadService } from '../services';
+import { FileUploadService } from '../services/file-upload.service';
+import { generateResponse } from '../utils/custom-json-response';
+import { authenticate, STRATEGY } from 'loopback4-authentication';
+/* import { generateResponse } from '../utils/custom-json-response';
+import { authenticate, STRATEGY } from 'loopback4-authentication'; */
 
 export class FileUploadController {
     constructor(
-        @repository(UserRepository)
-        public userRepository: UserRepository,
-        @service(UserService)
-        private userService: UserService,
-        @service(FileUploadService)
-        private fileUploadService: FileUploadService
-    ) { }
+        @inject('services.FileUploadService')
+        public fileUploadService: FileUploadService,
+        @inject(RestBindings.Http.RESPONSE)
+        private httpResponse: Response
+    ) {}
 
     @authenticate(STRATEGY.BEARER)
-    @authorize({
-        permissions: [PermissionKey.CreateAnyUser, PermissionKey.CreateTenantUser],
-    })
-    @post('uploads/profilePhoto/{id}')
-    @response(200, {
-        description: 'Save image profile of user.',
-        content: {
-            'aplication/json': {
-                schema: {
-                    type: 'object',
-                },
-            },
-        },
-    })
-    async fileUpload(
-        @requestBody.file()
-        request: Request,
-        @inject(RestBindings.Http.RESPONSE)
-        responseEndpoint: Response,
-        @param.path.number('id')
-        userId: number
-    ): Promise<void> {
-        return this.userService.saveImageUser(userId, request, responseEndpoint);
-    }
-
     @authorize({ permissions: ['*'] })
-    @get('uploads/getImage/{imagePath}')
-    @response(200, {
-        description: 'View images from uploads.',
-        content: {
-            'image/jpeg': {
-                schema: {
-                    type: 'object',
+    @post('/upload')
+    async fileUpload(
+        @requestBody({
+            description: 'Subida de archivos',
+            required: false,
+            content: {
+                'multipart/form-data': {
+                    'x-parser': 'stream',
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            files: {
+                                description: 'Archivos',
+                                type: 'array',
+                                items: { type: 'string', format: 'binary' },
+                            },
+                            customPath: {
+                                type: 'string',
+                                description: 'Ruta personalizada',
+                            },
+                        },
+                    },
                 },
             },
-        },
-    })
-    async getImage(
-        @inject(RestBindings.Http.RESPONSE)
-        responseEndpoint: Response,
-        @param.path.string('imagePath') imageName: string
-    ): Promise<void> {
+        })
+        request: Request,
+        @inject(RestBindings.Http.RESPONSE) response: Response
+    ): Promise<object | null> {
         try {
-            const appDir = process.cwd();
-            const PROFILE_PATH_ABSOLUTE = path.join(appDir, 'uploads');
-
-            // Ruta a las imágenes en el servidor
-            const imagePath = `${PROFILE_PATH_ABSOLUTE}${imageName}`;
-
-            // Intentar leer los datos binarios de la imagen
-            const image = await fs.promises.readFile(imagePath);
-
-            // Establecer el encabezado de contenido como 'image/jpeg'
-            responseEndpoint.setHeader('Content-Type', 'image/jpeg');
-
-            // Enviar los datos binarios de la imagen como respuesta
-            responseEndpoint.end(image);
+            const serviceResponse = await this.fileUploadService.fileUpload(request, response);
+            return serviceResponse;
         } catch (error) {
-            // Si la imagen no existe, enviar un mensaje de error
-            responseEndpoint.status(404);
-            responseEndpoint.send('Imagen no encontrada.');
+            return this.httpResponse
+                .status(error.statusCode || 500)
+                .send(
+                    generateResponse(error.statusCode || 500, false, error.message, null, error.detail || error.details)
+                );
         }
-    }
-
-    @authenticate(STRATEGY.BEARER)
-    @authorize({
-        permissions: [PermissionKey.DeleteAnyUser, PermissionKey.DeleteTenantUser],
-    })
-    @del('uploads/{imagePath}/{subdirectory}/{id}')
-    @response(204, {
-        description: 'ContactsTypes DELETE success',
-    })
-    async deleteById(
-        @param.path.string('imagePath') imagePath: string,
-        @param.path.string('subdirectory') subdirectory: string,
-        @param.path.number('id') id?: number
-    ): Promise<void> {
-        await this.fileUploadService.deleteImagePath(imagePath, subdirectory, id!);
     }
 }

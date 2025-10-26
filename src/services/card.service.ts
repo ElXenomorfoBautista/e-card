@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { BindingScope, injectable, service } from '@loopback/core';
+import { BindingScope, injectable } from '@loopback/core';
 import { repository } from '@loopback/repository';
 import { HttpErrors } from '@loopback/rest';
 
@@ -14,7 +14,6 @@ import {
 } from '../repositories';
 import { Card, CardBusinessHour, CardWithRelations } from '../models';
 import { CreateCardRequest, DuplicateCardRequest, CardCompleteResponse, CardStatsResponse } from '../types/ecard.types';
-import { QRCodeGenerator } from './qr-generator.service';
 
 @injectable({ scope: BindingScope.TRANSIENT })
 export class CardService {
@@ -32,9 +31,7 @@ export class CardService {
         @repository(CardViewRepository)
         public cardViewRepository: CardViewRepository,
         @repository(SocialNetworkTypeRepository)
-        public socialNetworkTypeRepository: SocialNetworkTypeRepository,
-        @service(QRCodeGenerator)
-        private qrCodeGenerator: QRCodeGenerator
+        public socialNetworkTypeRepository: SocialNetworkTypeRepository
     ) {}
 
     // ===================================================
@@ -68,6 +65,7 @@ export class CardService {
                 fontSize: cardData.styles.fontSize ?? 'medium',
                 layoutTemplate: cardData.styles.layoutTemplate ?? 'modern',
                 borderRadius: cardData.styles.borderRadius ?? 'medium',
+                backgroundImageUrl: cardData.styles.backgroundImageUrl ?? undefined,
             });
         } else {
             // Crear estilos por defecto
@@ -82,6 +80,7 @@ export class CardService {
                 fontSize: 'medium',
                 layoutTemplate: 'modern',
                 borderRadius: 'medium',
+                backgroundImageUrl: undefined,
             });
         }
 
@@ -198,6 +197,7 @@ export class CardService {
                 fontSize: cardStyle?.fontSize ?? 'medium',
                 layoutTemplate: cardStyle?.layoutTemplate ?? 'modern',
                 borderRadius: cardStyle?.borderRadius ?? 'medium',
+                backgroundImageUrl: cardStyle?.backgroundImageUrl ?? undefined,
             },
 
             // Información de contacto
@@ -280,6 +280,7 @@ export class CardService {
                 fontSize: styleData.fontSize,
                 layoutTemplate: styleData.layoutTemplate,
                 borderRadius: styleData.borderRadius,
+                backgroundImageUrl: sourceCard.cardStyle.backgroundImageUrl,
             });
         }
 
@@ -391,7 +392,7 @@ export class CardService {
 
         // URL pública de la tarjeta
         const publicUrl = `${process.env.FRONTEND_URL ?? 'https://ecard.com'}/${card.slug}`;
-
+        /*
         // CORREGIR: Usar el método correcto con 3 parámetros
         const qrResult = await this.qrCodeGenerator.generateQRCode(publicUrl, `card-${card.id}`, 'cards');
 
@@ -402,8 +403,8 @@ export class CardService {
         await this.cardRepository.updateById(cardId, {
             qrCodeUrl: qrPath,
         });
-
-        return qrPath;
+ */
+        return publicUrl;
     }
 
     // ===================================================

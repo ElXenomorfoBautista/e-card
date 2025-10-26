@@ -38,10 +38,13 @@ export class Loopback4Application extends BootMixin(ServiceMixin(RepositoryMixin
         // Set up default home page
         this.static('/', path.join(__dirname, '../public'));
 
+        this.static('/uploads', path.join(__dirname, '../uploads'));
+
         // // Customize @loopback/rest-explorer configuration here
         this.bind(RestExplorerBindings.CONFIG).to({
             path: '/explorer',
         });
+
         this.component(RestExplorerComponent);
 
         // Add authentication component
@@ -55,7 +58,7 @@ export class Loopback4Application extends BootMixin(ServiceMixin(RepositoryMixin
 
         // Add authorization component
         this.bind(AuthorizationBindings.CONFIG).to({
-            allowAlwaysPaths: ['/explorer'],
+            allowAlwaysPaths: ['/explorer', '/uploads'],
         });
         this.component(AuthorizationComponent);
 
